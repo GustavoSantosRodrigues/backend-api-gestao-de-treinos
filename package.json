@@ -10,6 +10,9 @@
     "build": "tsc",
     "start": "node dist/index.js"
   },
+  "engines": {
+    "node": "24.x"
+  },
   "devDependencies": {
     "@types/node": "^24.11.0",
     "eslint": "^9.39.2",
