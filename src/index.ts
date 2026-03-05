@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import cors from '@fastify/cors';
 import fastifySwagger from '@fastify/swagger';
 import fastifyApiReference from '@scalar/fastify-api-reference';
 import Fastify from 'fastify'
@@ -33,8 +34,10 @@ await app.register(fastifySwagger, {
 
 });
 
-await app.register(import('@fastify/cors'), {
-  origin: ['http://localhost:3000'],
+
+await app.register(cors, {
+  origin: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   credentials: true,
 });
 
@@ -51,13 +54,12 @@ await app.register(fastifyApiReference, {
       {
         title: 'Auth api',
         slug: 'auth-api',
-        url: '../api/auth/open-api/generate-schema'
-        
+        url: '/api/auth/open-api/generate-schema'
+
       }
     ]
   },
 });
-
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: 'GET',
@@ -105,10 +107,9 @@ app.route({
   }
 });
 
-app.listen({ port: 4949 });
 
 try {
-  await app.listen({ port: parseInt(process.env.PORT || '3000') })
+  await app.listen({ port: 8081 })
 } catch (err) {
   app.log.error(err)
   process.exit(1)

@@ -12,12 +12,12 @@ export const prisma = new PrismaClient(
 );
 
 export const auth = betterAuth({
-    trustedOrigins: ['http://localhost:3000'],
-    emailAndPassword: {
-        enabled: true
-    },
-    database: prismaAdapter(prisma, {
-        provider: "postgresql"
-    }),
+  trustedOrigins: [
+    "http://localhost:3000",   // front
+    "http://localhost:8081",   // api/docs
+    "http://127.0.0.1:8081",   // api/docs (scalar costuma usar isso)
+  ],
+  emailAndPassword: { enabled: true },
+  database: prismaAdapter(prisma, { provider: "postgresql" }),
   plugins: [openAPI()],
-})
+});
