@@ -11,22 +11,32 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  
 }
 
 model User {
-  id String @id @default(uuid())
-  workoutPlans workoutPlan[]
+  id            String        @id
+  workoutPlans  workoutPlan[]
+  name          String
+  email         String
+  emailVerified Boolean       @default(false)
+  image         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
 }
 
 model workoutPlan {
-  id         String   @id @default(uuid())
-  name       String
-  userId     String 
-  user User @relation(fields: [userId], references: [id])
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String       @id @default(uuid())
+  name        String
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   workoutDays workoutDay[]
 }
 
@@ -41,27 +51,74 @@ enum WeekDay {
 }
 
 model workoutDay {
-  id         String   @id @default(uuid())
-  name       String
+  id            String            @id @default(uuid())
+  name          String
   workoutPlanId String
-  workoutPlan workoutPlan @relation(fields: [workoutPlanId], references: [id])
-  isRestDay  Boolean  @default(false)
-  weekDay    WeekDay
-  exercises  workoutExercise[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  workoutPlan   workoutPlan       @relation(fields: [workoutPlanId], references: [id])
+  isRestDay     Boolean           @default(false)
+  weekDay       WeekDay
+  exercises     workoutExercise[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 }
 
 model workoutExercise {
-  id         String   @id @default(uuid())
-  name       String
-  workoutDayId String
-  workoutDay workoutDay @relation(fields: [workoutDayId], references: [id])
-  order      Int
-  sets       Int
-  reps       Int
+  id              String     @id @default(uuid())
+  name            String
+  workoutDayId    String
+  workoutDay      workoutDay @relation(fields: [workoutDayId], references: [id])
+  order           Int
+  sets            Int
+  reps            Int
   restTimeSeconds Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }
 
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
