@@ -1,22 +1,19 @@
 import "dotenv/config";
 
 import fastifySwagger from '@fastify/swagger';
-import fastifySwaggerUI from '@fastify/swagger-ui';
+import fastifyApiReference from '@scalar/fastify-api-reference';
 import Fastify from 'fastify'
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod';
-import z from 'zod'
 
 import { auth } from './lib/index.js';
-
-
 
 const app = Fastify({
   logger: true
 })
 
-
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
+
 
 await app.register(fastifySwagger, {
   openapi: {
@@ -36,30 +33,40 @@ await app.register(fastifySwagger, {
 
 });
 
-await app.register(fastifySwaggerUI, {
-  routePrefix: '/docs',
-});
-
 await app.register(import('@fastify/cors'), {
   origin: ['http://localhost:3000'],
   credentials: true,
 });
 
+await app.register(fastifyApiReference, {
+  routePrefix: '/docs',
+  configuration: {
+    theme: 'saturn',
+    sources: [
+      {
+        title: 'Bootcamp Treinos API',
+        slug: 'bootcamp-treinos-api',
+        url: '/swagger.json'
+      },
+      {
+        title: 'Auth api',
+        slug: 'auth-api',
+        url: '../api/auth/open-api/generate-schema'
+        
+      }
+    ]
+  },
+});
+
+
 app.withTypeProvider<ZodTypeProvider>().route({
   method: 'GET',
-  url: '/',
+  url: '/swagger.json',
   schema: {
-    description: 'hello world',
-    tags: ['hello world'],
-    response: {
-      200: z.object({
-        message: z.string(),
-
-      })
-    }
+    hide: true
   },
   handler: async function handler() {
-    return { message: 'hello world' }
+    return app.swagger()
   }
 });
 
