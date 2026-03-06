@@ -1,17 +1,27 @@
 import "dotenv/config";
 
-import cors from '@fastify/cors';
-import fastifySwagger from '@fastify/swagger';
-import fastifyApiReference from '@scalar/fastify-api-reference';
-import Fastify from 'fastify'
-import { jsonSchemaTransform, serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod';
+import fastifyCors from "@fastify/cors";
+import fastifySwagger from "@fastify/swagger";
+import fastifyApiReference from "@scalar/fastify-api-reference";
+import Fastify from "fastify";
+import {
+  jsonSchemaTransform,
+  serializerCompiler,
+  validatorCompiler,
+  ZodTypeProvider,
+} from "fastify-type-provider-zod";
+import z from "zod";
 
 import { auth } from './lib/index.js';
+import { aiRoutes } from "./routes/ai.js";
+import { homeRoutes } from "./routes/home.js";
+import { meRoutes } from "./routes/me.js";
+import { statsRoutes } from "./routes/stats.js";
 import { workoutPlanRoutes } from "./routes/workout-plan.js";
 
 const app = Fastify({
-  logger: true
-})
+  logger: true,
+});
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
@@ -19,61 +29,80 @@ app.setSerializerCompiler(serializerCompiler);
 await app.register(fastifySwagger, {
   openapi: {
     info: {
-      title: 'Bootcamp Treinos API',
-      description: 'Api para todos os treinos do bootcamp',
-      version: '1.0.0',
+      title: "Bootcamp Treinos API",
+      description: "API para o bootcamp de treinos do FSC",
+      version: "1.0.0",
     },
     servers: [
       {
-        url: 'http://localhost:8081',
-        description: 'Local server'
-      }
+        description: "Localhost",
+        url: "http://localhost:8081",
+      },
     ],
   },
   transform: jsonSchemaTransform,
-
 });
 
-await app.register(cors, {
-  origin: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+await app.register(fastifyCors, {
+  origin: ["http://localhost:3000"],
   credentials: true,
 });
 
 await app.register(fastifyApiReference, {
-  routePrefix: '/docs',
+  routePrefix: "/docs",
   configuration: {
-    theme: 'saturn',
     sources: [
       {
-        title: 'Bootcamp Treinos API',
-        slug: 'bootcamp-treinos-api',
-        url: '/swagger.json'
+        title: "Bootcamp Treinos API",
+        slug: "bootcamp-treinos-api",
+        url: "/swagger.json",
       },
       {
-        title: 'Auth api',
-        slug: 'auth-api',
-        url: '/api/auth/open-api/generate-schema'
+        title: "Auth API",
+        slug: "auth-api",
+        url: "/api/auth/open-api/generate-schema",
+      },
+    ],
+  },
+});
 
-      }
-    ]
+// RESTful
+// Routes
+await app.register(homeRoutes, { prefix: "/home" });
+await app.register(meRoutes, { prefix: "/me" });
+await app.register(statsRoutes, { prefix: "/stats" });
+await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
+await app.register(aiRoutes, { prefix: "/ai" });
+
+app.withTypeProvider<ZodTypeProvider>().route({
+  method: "GET",
+  url: "/swagger.json",
+  schema: {
+    hide: true,
+  },
+  handler: async () => {
+    return app.swagger();
   },
 });
 
 app.withTypeProvider<ZodTypeProvider>().route({
-  method: 'GET',
-  url: '/swagger.json',
+  method: "GET",
+  url: "/",
   schema: {
-    hide: true
+    description: "Hello world",
+    tags: ["Hello World"],
+    response: {
+      200: z.object({
+        message: z.string(),
+      }),
+    },
   },
-  handler: async function handler() {
-    return app.swagger()
-  }
+  handler: () => {
+    return {
+      message: "Hello World",
+    };
+  },
 });
-
-// restFull
-// routes
-await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 
 app.route({
   method: ["GET", "POST"],
@@ -104,15 +133,15 @@ app.route({
       app.log.error(error);
       reply.status(500).send({
         error: "Internal authentication error",
-        code: "AUTH_FAILURE"
+        code: "AUTH_FAILURE",
       });
     }
-  }
+  },
 });
 
 try {
-  await app.listen({ port: 8081 })
+  await app.listen({ port: Number(process.env.PORT) || 8081 });
 } catch (err) {
-  app.log.error(err)
-  process.exit(1)
+  app.log.error(err);
+  process.exit(1);
 }
