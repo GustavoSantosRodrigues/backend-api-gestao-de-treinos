@@ -14,30 +14,34 @@ datasource db {
 }
 
 model User {
-  id            String        @id
-  workoutPlans  workoutPlan[]
-  name          String
-  email         String
-  emailVerified Boolean       @default(false)
-  image         String?
-  createdAt     DateTime      @default(now()) @db.Timestamp
-  updatedAt     DateTime      @updatedAt @db.Timestamp
-  sessions      Session[]
-  accounts      Account[]
+  id                  String        @id
+  workoutPlans        WorkoutPlan[]
+  name                String
+  email               String
+  emailVerified       Boolean       @default(false)
+  image               String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  sessions            Session[]
+  accounts            Account[]
+  weightInGrams       Int?
+  heightInCentimeters Int?
+  age                 Int?
+  bodyFatPercentage   Int?
 
   @@unique([email])
   @@map("user")
 }
 
-model workoutPlan {
+model WorkoutPlan {
   id          String       @id @default(uuid())
   name        String
   userId      String
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutDays WorkoutDay[]
   isActive    Boolean      @default(true)
-  createdAt   DateTime     @default(now()) @db.Timestamp
-  updatedAt   DateTime     @updatedAt @db.Timestamp
-  workoutDays workoutDay[]
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @db.Timestamptz()
 }
 
 enum WeekDay {
@@ -50,49 +54,50 @@ enum WeekDay {
   SUNDAY
 }
 
-model workoutDay {
+model WorkoutDay {
   id                         String            @id @default(uuid())
   name                       String
   workoutPlanId              String
-  workoutPlan                workoutPlan       @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
-  isRestDay                  Boolean           @default(false)
+  workoutPlan                WorkoutPlan       @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  isRest                     Boolean           @default(false)
   weekDay                    WeekDay
-  exercises                  workoutExercise[]
+  exercises                  WorkoutExercise[]
   estimatedDurationInSeconds Int
-  createdAt                  DateTime          @default(now()) @db.Timestamp
-  updatedAt                  DateTime          @updatedAt @db.Timestamp
-  workoutSessions            WorkoutSession[]
+  coverImageUrl              String?
+  createdAt                  DateTime          @default(now()) @db.Timestamptz()
+  updatedAt                  DateTime          @updatedAt @db.Timestamptz()
+  sessions                   WorkoutSession[]
 }
 
-model workoutExercise {
-  id              String     @id @default(uuid())
-  name            String
-  workoutDayId    String
-  workoutDay      workoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
-  order           Int
-  sets            Int
-  reps            Int
-  restTimeSeconds Int
-  createdAt       DateTime   @default(now()) @db.Timestamp
-  updatedAt       DateTime   @updatedAt @db.Timestamp
+model WorkoutExercise {
+  id                String     @id @default(uuid())
+  name              String
+  order             Int
+  workoutDayId      String
+  workoutDay        WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  sets              Int
+  reps              Int
+  restTimeInSeconds Int
+  createdAt         DateTime   @default(now()) @db.Timestamptz()
+  updatedAt         DateTime   @updatedAt @db.Timestamptz()
 }
 
 model WorkoutSession {
   id           String     @id @default(uuid())
   workoutDayId String
-  workoutDay   workoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
-  startedAt    DateTime   @db.Timestamp
-  completedAt  DateTime?  @db.Timestamp
-  createdAt    DateTime   @default(now()) @db.Timestamp
-  updatedAt    DateTime   @updatedAt @db.Timestamp
+  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  startedAt    DateTime   @db.Timestamptz()
+  completedAt  DateTime?  @db.Timestamptz()
+  createdAt    DateTime   @default(now()) @db.Timestamptz()
+  updatedAt    DateTime   @updatedAt @db.Timestamptz()
 }
 
 model Session {
   id        String   @id
   expiresAt DateTime
   token     String
-  createdAt DateTime @default(now()) @db.Timestamp
-  updatedAt DateTime @updatedAt @db.Timestamp
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
   userId    String
@@ -116,8 +121,8 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime  @default(now()) @db.Timestamp
-  updatedAt             DateTime  @updatedAt @db.Timestamp
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@index([userId])
   @@map("account")
@@ -128,8 +133,8 @@ model Verification {
   identifier String
   value      String
   expiresAt  DateTime
-  createdAt  DateTime @default(now()) @db.Timestamp
-  updatedAt  DateTime @updatedAt @db.Timestamp
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([identifier])
   @@map("verification")
