@@ -99,10 +99,14 @@ export class GetStats {
       return total + end.diff(start, "second");
     }, 0);
 
+    const streakReferenceDate = dayjs.utc().isBefore(toDate)
+      ? dayjs.utc()
+      : toDate;
+
     const workoutStreak = await this.calculateStreak(
       workoutPlan.id,
       workoutPlan.workoutDays,
-      toDate
+      streakReferenceDate,
     );
 
     return {
@@ -120,11 +124,11 @@ export class GetStats {
       weekDay: string;
       isRest: boolean;
     }>,
-    currentDate: dayjs.Dayjs
+    currentDate: dayjs.Dayjs,
   ): Promise<number> {
     const planWeekDays = new Set(workoutDays.map((d) => d.weekDay));
     const restWeekDays = new Set(
-      workoutDays.filter((d) => d.isRest).map((d) => d.weekDay)
+      workoutDays.filter((d) => d.isRest).map((d) => d.weekDay),
     );
 
     const allSessions = await prisma.workoutSession.findMany({
@@ -136,7 +140,7 @@ export class GetStats {
     });
 
     const completedDates = new Set(
-      allSessions.map((s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD"))
+      allSessions.map((s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD")),
     );
 
     let streak = 0;
