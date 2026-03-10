@@ -18,6 +18,8 @@ export const meRoutes = async (app: FastifyInstance) => {
     url: "/",
     schema: {
       tags: ["Me"],
+      operationId: "getUserTrainData",
+      description: "Get user train data",
       summary: "Get user train data",
       response: {
         200: UserTrainDataSchema.nullable(),
@@ -58,6 +60,7 @@ export const meRoutes = async (app: FastifyInstance) => {
     url: "/",
     schema: {
       tags: ["Me"],
+      operationId: "upsertUserTrainData",
       summary: "Upsert user train data",
       body: UpsertUserTrainDataBodySchema,
       response: {
