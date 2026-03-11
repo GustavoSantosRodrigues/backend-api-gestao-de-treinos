@@ -1,4 +1,3 @@
-import { openai } from "@ai-sdk/openai";
 import {
   convertToModelMessages,
   stepCountIs,
@@ -17,8 +16,7 @@ import { CreateWorkoutPlan } from "../usecases/CreateWorkoutPlan.js";
 import { GetUserTrainData } from "../usecases/GetUserTrainData.js";
 import { ListWorkoutPlans } from "../usecases/ListWorkoutPlans.js";
 import { UpsertUserTrainData } from "../usecases/UpsertUserTrainData.js";
-import {google} from "@ai-sdk/google";
-
+import { openai } from "@ai-sdk/openai";
 
 const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em montagem de planos de treino personalizados.
 
@@ -97,10 +95,10 @@ export const aiRoutes = async (app: FastifyInstance) => {
       const { messages } = request.body as { messages: UIMessage[] };
 
       const result = streamText({
-        model: google("gemini-2.5-flash"),
+        model: openai("gpt-4o-mini"),
         system: SYSTEM_PROMPT,
         messages: await convertToModelMessages(messages),
-        stopWhen: stepCountIs(5),
+        stopWhen: stepCountIs(10),
         tools: {
           getUserTrainData: tool({
             description:
@@ -158,18 +156,18 @@ export const aiRoutes = async (app: FastifyInstance) => {
                     isRest: z
                       .boolean()
                       .describe(
-                        "Se é dia de descanso (true) ou treino (false)"
+                        "Se é dia de descanso (true) ou treino (false)",
                       ),
                     estimatedDurationInSeconds: z
                       .number()
                       .describe(
-                        "Duração estimada em segundos (0 para dias de descanso)"
+                        "Duração estimada em segundos (0 para dias de descanso)",
                       ),
                     coverImageUrl: z
                       .string()
                       .url()
                       .describe(
-                        "URL da imagem de capa do dia de treino. Usar as URLs de superior ou inferior conforme o foco muscular do dia."
+                        "URL da imagem de capa do dia de treino. Usar as URLs de superior ou inferior conforme o foco muscular do dia.",
                       ),
                     exercises: z
                       .array(
@@ -183,17 +181,17 @@ export const aiRoutes = async (app: FastifyInstance) => {
                           restTimeInSeconds: z
                             .number()
                             .describe(
-                              "Tempo de descanso entre séries em segundos"
+                              "Tempo de descanso entre séries em segundos",
                             ),
-                        })
+                        }),
                       )
                       .describe(
-                        "Lista de exercícios (vazia para dias de descanso)"
+                        "Lista de exercícios (vazia para dias de descanso)",
                       ),
-                  })
+                  }),
                 )
                 .describe(
-                  "Array com exatamente 7 dias de treino (MONDAY a SUNDAY)"
+                  "Array com exatamente 7 dias de treino (MONDAY a SUNDAY)",
                 ),
             }),
             execute: async (input) => {
