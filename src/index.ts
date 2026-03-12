@@ -18,7 +18,7 @@ import { homeRoutes } from "./routes/home.js";
 import { meRoutes } from "./routes/me.js";
 import { statsRoutes } from "./routes/stats.js";
 import { workoutPlanRoutes } from "./routes/workout-plan.js";
-import { env } from "./lib/ENV.js";
+import { env } from "./lib/env.js";
 
 const app = Fastify({
   logger: true,

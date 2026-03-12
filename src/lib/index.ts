@@ -3,7 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { openAPI } from "better-auth/plugins";
 
 import { prisma } from "./db.js";
-import { env } from "./ENV.js";
+import { env } from "./env.js";
 
 export const auth = betterAuth({
   trustedOrigins: [
