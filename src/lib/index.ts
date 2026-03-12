@@ -6,6 +6,7 @@ import { prisma } from "./db.js";
 import { env } from "./env.js";
 
 export const auth = betterAuth({
+  baseURL: env.BETTER_AUTH_URL,
   trustedOrigins: [
     env.WEB_APP_BASE_URL, // web
     env.BETTER_AUTH_URL, // api/docs
