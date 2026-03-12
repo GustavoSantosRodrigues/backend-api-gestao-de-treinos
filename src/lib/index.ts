@@ -8,14 +8,14 @@ import { env } from "./env.js";
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   trustedOrigins: [
-    env.WEB_APP_BASE_URL, // web
-    env.BETTER_AUTH_URL, // api/docs
+    env.WEB_APP_BASE_URL,
+    env.BETTER_AUTH_URL,
   ],
-   socialProviders: {
+  socialProviders: {
     google: {
       prompt: "select_account",
       clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
   emailAndPassword: {
@@ -25,10 +25,14 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   plugins: [openAPI()],
-  advanced: {
-    crossSubDomainCookies: {
-      enabled: true,
-      domain: env.NODE_ENV === "production" ? ".gustavodevsr.xyz" : "localhost", 
-    }
-  }
+  ...(env.NODE_ENV === "production"
+    ? {
+        advanced: {
+          crossSubDomainCookies: {
+            enabled: true,
+            domain: ".gustavodevsr.xyz",
+          },
+        },
+      }
+    : {}),
 });
