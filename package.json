@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx --watch src/index.ts ",
-    "build": "tsc",
+    "build": "npm run build:prisma generate && tsc",
     "start": "node dist/index.js"
   },
   "engines": {
