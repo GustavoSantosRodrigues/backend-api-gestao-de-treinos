@@ -28,7 +28,7 @@ export const auth = betterAuth({
   advanced: {
     crossSubDomainCookies: {
       enabled: true,
-      // domain: env.WEB_APP_BASE_URL.replace(/https?:\/\//, ""),
+      domain: env.NODE_ENV === "production" ? ".gustavodevsr.xyz" : "localhost", 
     }
   }
 });
