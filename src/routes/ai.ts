@@ -17,8 +17,10 @@ import { GetUserTrainData } from "../usecases/GetUserTrainData.js";
 import { ListWorkoutPlans } from "../usecases/ListWorkoutPlans.js";
 import { UpsertUserTrainData } from "../usecases/UpsertUserTrainData.js";
 import { openai } from "@ai-sdk/openai";
+import { DeleteWorkoutPlan } from "../usecases/DeleteWorkoutPlan.js";
 
 const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em montagem de planos de treino personalizados.
+
 
 ## Personalidade
 - Tom amigável, motivador e acolhedor.
@@ -32,7 +34,17 @@ const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em mont
    - Pergunte nome, peso (kg), altura (cm), idade e % de gordura corporal (inteiro de 0 a 100, onde 100 = 100%).
    - Faça perguntas simples e diretas, tudo em uma única mensagem.
    - Após receber os dados, salve com a tool \`updateUserTrainData\`. **IMPORTANTE**: converta o peso de kg para gramas (multiplique por 1000) antes de salvar.
-3. Se o usuário **já tem dados cadastrados**: cumprimente-o pelo nome de forma amigável.
+3. Se o usuário **já tem dados cadastrados**:
+   - **SEMPRE** chame a tool \`getWorkoutPlans\` imediatamente após.
+   - Se **já existem planos**: cumprimente pelo nome e diga que os planos dele estão disponíveis no app. Pergunte se ele quer ajustar algo, criar um novo plano ou tirar dúvidas. **NÃO sugira criar um plano novo espontaneamente.**
+   - Se **não existem planos ainda**: cumprimente pelo nome e pergunte se ele quer criar seu primeiro plano de treino.
+
+## Tratamento de Erros
+
+Se qualquer tool retornar um erro ou falhar:
+  - Não exiba mensagens técnicas de erro ao usuário.
+  - Responda de forma amigável: "Ops, tive um problema ao buscar suas informações. Pode tentar novamente?"
+  - Não tente chamar a mesma tool repetidamente em caso de falha.
 
 ## Criação de Plano de Treino
 
@@ -42,6 +54,8 @@ Quando o usuário quiser criar um plano de treino:
 - O plano DEVE ter exatamente 7 dias (MONDAY a SUNDAY).
 - Dias sem treino devem ter: \`isRest: true\`, \`exercises: []\`, \`estimatedDurationInSeconds: 0\`.
 - Chame a tool \`createWorkoutPlan\` para salvar o plano.
+
+- Se o usuário quiser deletar um plano, confirme antes perguntando "Tem certeza que quer deletar o plano **[nome]**?" e só então chame a tool \`deleteWorkoutPlan\`.
 
 ### Divisões de Treino (Splits)
 
@@ -59,6 +73,8 @@ Escolha a divisão adequada com base nos dias disponíveis:
 - Descanso entre séries: 60-90s (hipertrofia), 2-3min (compostos pesados)
 - Evitar treinar o mesmo grupo muscular em dias consecutivos
 - Nomes descritivos para cada dia (ex: "Superior A - Peito e Costas", "Descanso")
+- Sempre preencha \`weightSuggestion\` com uma orientação de carga (ex: "Carga que cause falha entre 8-12 reps", "40-50% do peso corporal", "Halteres leves, foco na execução")
+- Sempre preencha \`notes\` com uma dica de execução curta (ex: "Manter cotovelos próximos ao corpo", "Não travar os joelhos no topo")
 
 ### Imagens de Capa (coverImageUrl)
 
@@ -81,6 +97,17 @@ export const aiRoutes = async (app: FastifyInstance) => {
     schema: {
       tags: ["AI"],
       summary: "Chat with AI personal trainer",
+      body: z.object({
+        messages: z.array(
+          z.object({
+            id: z.string(),
+            role: z.enum(["user", "assistant", "system"]),
+            content: z.union([z.string(), z.array(z.any())]).optional(),
+            parts: z.array(z.any()),
+            createdAt: z.date().optional(),
+          }),
+        ),
+      }),
     },
     handler: async (request, reply) => {
       const session = await auth.api.getSession({
@@ -92,13 +119,14 @@ export const aiRoutes = async (app: FastifyInstance) => {
       }
 
       const userId = session.user.id;
-      const { messages } = request.body as { messages: UIMessage[] };
+
+      const { messages } = request.body;
 
       const result = streamText({
         model: openai("gpt-4o-mini"),
         system: SYSTEM_PROMPT,
-        messages: await convertToModelMessages(messages),
-        stopWhen: stepCountIs(10),
+        messages: await convertToModelMessages(messages as UIMessage[]),
+        stopWhen: stepCountIs(15),
         tools: {
           getUserTrainData: tool({
             description:
@@ -113,6 +141,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
             description:
               "Atualiza os dados de treino do usuário autenticado. O peso deve ser em gramas (converter kg * 1000).",
             inputSchema: z.object({
+              name: z.string().describe("Nome do usuário"),
               weightInGrams: z
                 .number()
                 .describe("Peso do usuário em gramas (ex: 70kg = 70000)"),
@@ -183,6 +212,18 @@ export const aiRoutes = async (app: FastifyInstance) => {
                             .describe(
                               "Tempo de descanso entre séries em segundos",
                             ),
+                          weightSuggestion: z
+                            .string()
+                            .optional()
+                            .describe(
+                              "Sugestão de carga (ex: 'Carga que cause falha entre 8-12 reps', '20kg')",
+                            ),
+                          notes: z
+                            .string()
+                            .optional()
+                            .describe(
+                              "Observações sobre execução do exercício (ex: 'Manter cotovelos próximos ao corpo')",
+                            ),
                         }),
                       )
                       .describe(
@@ -201,6 +242,18 @@ export const aiRoutes = async (app: FastifyInstance) => {
                 name: input.name,
                 workoutDays: input.workoutDays,
               });
+            },
+          }),
+          deleteWorkoutPlan: tool({
+            description: "Deleta um plano de treino do usuário pelo ID.",
+            inputSchema: z.object({
+              workoutPlanId: z
+                .string()
+                .describe("ID do plano de treino a ser deletado"),
+            }),
+            execute: async ({ workoutPlanId }) => {
+              const deleteWorkoutPlan = new DeleteWorkoutPlan();
+              return deleteWorkoutPlan.execute({ userId, workoutPlanId });
             },
           }),
         },

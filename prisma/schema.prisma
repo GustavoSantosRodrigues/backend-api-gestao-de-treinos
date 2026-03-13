@@ -77,6 +77,8 @@ model WorkoutExercise {
   workoutDay        WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
   sets              Int
   reps              Int
+  weightSuggestion  String?
+  notes              String?
   restTimeInSeconds Int
   createdAt         DateTime   @default(now()) @db.Timestamptz()
   updatedAt         DateTime   @updatedAt @db.Timestamptz()

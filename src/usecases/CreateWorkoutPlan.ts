@@ -17,6 +17,8 @@ interface InputDto {
       name: string;
       sets: number;
       reps: number;
+      weightSuggestion?: string;
+      notes?: string;
       restTimeInSeconds: number;
     }>;
   }>;
@@ -75,6 +77,8 @@ export class CreateWorkoutPlan {
                   order: exercise.order,
                   sets: exercise.sets,
                   reps: exercise.reps,
+                  weightSuggestion: exercise.weightSuggestion ?? undefined,
+                  notes: exercise.notes ?? undefined,
                   restTimeInSeconds: exercise.restTimeInSeconds,
                 })),
               },
@@ -109,6 +113,8 @@ export class CreateWorkoutPlan {
             name: exercise.name,
             sets: exercise.sets,
             reps: exercise.reps,
+            weightSuggestion: exercise.weightSuggestion ?? undefined,
+            notes: exercise.notes ?? undefined,
             restTimeInSeconds: exercise.restTimeInSeconds,
           })),
         })),
