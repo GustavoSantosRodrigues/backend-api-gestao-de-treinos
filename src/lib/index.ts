@@ -29,6 +29,7 @@ export const auth = betterAuth({
     crossSubDomainCookies: {
       enabled: true,
       domain: env.NODE_ENV === "production" ? ".gustavodevsr.xyz" : undefined, 
-    }
+    },
+    useSecureCookies: env.NODE_ENV === "production",
   }
 });
