@@ -27,6 +27,7 @@ interface InputDto {
 interface OutputDto {
   id: string;
   name: string;
+  workoutPlanCreated:true;
   workoutDays: Array<{
     name: string;
     weekDay: WeekDay;
@@ -102,6 +103,7 @@ export class CreateWorkoutPlan {
       return {
         id: result.id,
         name: result.name,
+        workoutPlanCreated: true,
         workoutDays: result.workoutDays.map((day) => ({
           name: day.name,
           weekDay: day.weekDay,
