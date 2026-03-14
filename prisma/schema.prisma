@@ -69,29 +69,43 @@ model WorkoutDay {
   sessions                   WorkoutSession[]
 }
 
+model ExerciseLog {
+  id                String          @id @default(uuid())
+  workoutExerciseId String
+  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+  workoutSessionId  String
+  workoutSession    WorkoutSession  @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  setNumber         Int
+  weightInKg        Float?
+  repsCompleted     Int
+  createdAt         DateTime        @default(now()) @db.Timestamptz()
+}
+
 model WorkoutExercise {
-  id                String     @id @default(uuid())
+  id                String        @id @default(uuid())
   name              String
   order             Int
   workoutDayId      String
-  workoutDay        WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  workoutDay        WorkoutDay    @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
   sets              Int
   reps              Int
   weightSuggestion  String?
-  notes              String?
+  notes             String?
   restTimeInSeconds Int
-  createdAt         DateTime   @default(now()) @db.Timestamptz()
-  updatedAt         DateTime   @updatedAt @db.Timestamptz()
+  logs              ExerciseLog[]
+  createdAt         DateTime      @default(now()) @db.Timestamptz()
+  updatedAt         DateTime      @updatedAt @db.Timestamptz()
 }
 
 model WorkoutSession {
-  id           String     @id @default(uuid())
-  workoutDayId String
-  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
-  startedAt    DateTime   @db.Timestamptz()
-  completedAt  DateTime?  @db.Timestamptz()
-  createdAt    DateTime   @default(now()) @db.Timestamptz()
-  updatedAt    DateTime   @updatedAt @db.Timestamptz()
+  id            String        @id @default(uuid())
+  workoutDayId  String
+  workoutDay    WorkoutDay    @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  startedAt     DateTime      @db.Timestamptz()
+  completedAt   DateTime?     @db.Timestamptz()
+  exerciseLogs  ExerciseLog[]
+  createdAt     DateTime      @default(now()) @db.Timestamptz()
+  updatedAt     DateTime      @updatedAt @db.Timestamptz()
 }
 
 model Session {

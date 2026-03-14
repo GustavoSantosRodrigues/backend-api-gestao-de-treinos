@@ -33,7 +33,7 @@ export const StatsSchema = z.object({
     z.object({
       workoutDayCompleted: z.boolean(),
       workoutDayStarted: z.boolean(),
-    })
+    }),
   ),
   completedWorkoutsCount: z.number(),
   conclusionRate: z.number(),
@@ -42,23 +42,25 @@ export const StatsSchema = z.object({
 
 export const HomeDataSchema = z.object({
   activeWorkoutPlanId: z.uuid().optional(),
-  todayWorkoutDay: z.object({
-    workoutPlanId: z.uuid(),
-    id: z.uuid(),
-    name: z.string(),
-    isRest: z.boolean(),
-    weekDay: z.enum(WeekDay),
-    estimatedDurationInSeconds: z.number(),
-    coverImageUrl: z.url().optional(),
-    exercisesCount: z.number(),
-  }).optional(),
+  todayWorkoutDay: z
+    .object({
+      workoutPlanId: z.uuid(),
+      id: z.uuid(),
+      name: z.string(),
+      isRest: z.boolean(),
+      weekDay: z.enum(WeekDay),
+      estimatedDurationInSeconds: z.number(),
+      coverImageUrl: z.url().optional(),
+      exercisesCount: z.number(),
+    })
+    .optional(),
   workoutStreak: z.number(),
   consistencyByDay: z.record(
     z.iso.date(),
     z.object({
       workoutDayCompleted: z.boolean(),
       workoutDayStarted: z.boolean(),
-    })
+    }),
   ),
 });
 
@@ -78,7 +80,17 @@ export const GetWorkoutDaySchema = z.object({
       sets: z.number(),
       reps: z.number(),
       restTimeInSeconds: z.number(),
-    })
+      weightSuggestion: z.string().optional(),
+      notes: z.string().optional(),
+      logs: z.array(
+        z.object({
+          id: z.uuid(),
+          setNumber: z.number(),
+          weightInKg: z.number().nullable(),
+          repsCompleted: z.number(),
+        }),
+      ),
+    }),
   ),
   sessions: z.array(
     z.object({
@@ -86,7 +98,7 @@ export const GetWorkoutDaySchema = z.object({
       workoutDayId: z.uuid(),
       startedAt: z.iso.date().optional(),
       completedAt: z.iso.date().optional(),
-    })
+    }),
   ),
 });
 
@@ -102,7 +114,7 @@ export const GetWorkoutPlanSchema = z.object({
       coverImageUrl: z.url().optional(),
       estimatedDurationInSeconds: z.number(),
       exercisesCount: z.number(),
-    })
+    }),
   ),
 });
 
@@ -134,11 +146,11 @@ export const ListWorkoutPlansSchema = z.array(
             sets: z.number(),
             reps: z.number(),
             restTimeInSeconds: z.number(),
-          })
+          }),
         ),
-      })
+      }),
     ),
-  })
+  }),
 );
 
 export const UpsertUserTrainDataBodySchema = z.object({
@@ -182,8 +194,8 @@ export const WorkoutPlanSchema = z.object({
           sets: z.number().min(1),
           reps: z.number().min(1),
           restTimeInSeconds: z.number().min(1),
-        })
+        }),
       ),
-    })
+    }),
   ),
 });

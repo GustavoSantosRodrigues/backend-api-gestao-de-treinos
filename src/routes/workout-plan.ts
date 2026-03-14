@@ -26,6 +26,8 @@ import { GetWorkoutPlan } from "../usecases/GetWorkoutPlan.js";
 import { ListWorkoutPlans } from "../usecases/ListWorkoutPlans.js";
 import { StartWorkoutSession } from "../usecases/StartWorkoutSession.js";
 import { UpdateWorkoutSession } from "../usecases/UpdateWorkoutSession.js";
+import { LogExerciseSet } from "../usecases/LogExerciseSet.js";
+import { GetExerciseLogs } from "../usecases/GetExerciseLogs.js";
 
 export const workoutPlanRoutes = async (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -356,6 +358,135 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
           });
         }
 
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/:workoutPlanId/days/:workoutDayId/sessions/:sessionId/exercises/:exerciseId/logs",
+    schema: {
+      tags: ["Workout Plan"],
+      operationId: "logExerciseSet",
+      summary: "Log an exercise set",
+      params: z.object({
+        workoutPlanId: z.uuid(),
+        workoutDayId: z.uuid(),
+        sessionId: z.uuid(),
+        exerciseId: z.uuid(),
+      }),
+      body: z.object({
+        setNumber: z.number().int().min(1),
+        weightInKg: z.number().min(0).optional(),
+        repsCompleted: z.number().int().min(1),
+      }),
+      response: {
+        201: z.object({
+          id: z.string(),
+          workoutExerciseId: z.string(),
+          workoutSessionId: z.string(),
+          setNumber: z.number(),
+          weightInKg: z.number().nullable(),
+          repsCompleted: z.number(),
+          createdAt: z.date(),
+        }),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const logExerciseSet = new LogExerciseSet();
+        const result = await logExerciseSet.execute({
+          workoutExerciseId: request.params.exerciseId,
+          workoutSessionId: request.params.sessionId,
+          setNumber: request.body.setNumber,
+          weightInKg: request.body.weightInKg,
+          repsCompleted: request.body.repsCompleted,
+        });
+
+        return reply.status(201).send(result);
+      } catch (error) {
+        app.log.error(error);
+
+        if (error instanceof NotFoundError) {
+          return reply.status(404).send({
+            error: error.message,
+            code: "NOT_FOUND_ERROR",
+          });
+        }
+
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/:workoutPlanId/days/:workoutDayId/exercises/:exerciseId/logs",
+    schema: {
+      tags: ["Workout Plan"],
+      operationId: "getExerciseLogs",
+      summary: "Get exercise logs",
+      params: z.object({
+        workoutPlanId: z.uuid(),
+        workoutDayId: z.uuid(),
+        exerciseId: z.uuid(),
+      }),
+      response: {
+        200: z.object({
+          logs: z.array(
+            z.object({
+              id: z.string(),
+              setNumber: z.number(),
+              weightInKg: z.number().nullable(),
+              repsCompleted: z.number(),
+              createdAt: z.date(),
+            }),
+          ),
+        }),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const getExerciseLogs = new GetExerciseLogs();
+        const result = await getExerciseLogs.execute({
+          workoutExerciseId: request.params.exerciseId,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
         return reply.status(500).send({
           error: "Internal server error",
           code: "INTERNAL_SERVER_ERROR",
