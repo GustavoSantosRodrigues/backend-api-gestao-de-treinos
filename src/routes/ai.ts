@@ -72,7 +72,7 @@ Escolha a divisão adequada com base nos dias disponíveis:
 ### Princípios Gerais de Montagem
 - Músculos sinérgicos juntos (peito+tríceps, costas+bíceps)
 - Exercícios compostos primeiro, isoladores depois
-- 4 a 8 exercícios por sessão
+- **Mínimo 5 e máximo 8 exercícios por sessão de treino.** Nunca crie dias de treino com menos de 5 exercícios.
 - 3-4 séries por exercício. 8-12 reps (hipertrofia), 4-6 reps (força)
 - Descanso entre séries: 60-90s (hipertrofia), 2-3min (compostos pesados)
 - Evitar treinar o mesmo grupo muscular em dias consecutivos
@@ -232,7 +232,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
                         }),
                       )
                       .describe(
-                        "Lista de exercícios (vazia para dias de descanso)",
+                        "Lista de exercícios — mínimo 5 por dia de treino (vazia apenas para dias de descanso)",
                       ),
                   }),
                 )
