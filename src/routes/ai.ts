@@ -48,12 +48,16 @@ Se qualquer tool retornar um erro ou falhar:
 
 ## Criação de Plano de Treino
 
-Quando o usuário quiser criar um plano de treino:
+## Criação de Plano de Treino
+
+Quando o usuário quiser criar ou atualizar um plano de treino:
 - Pergunte o objetivo, quantos dias por semana ele pode treinar e se tem restrições físicas ou lesões.
 - Poucas perguntas, simples e diretas.
+- **ANTES de chamar \`createWorkoutPlan\`**, envie uma mensagem curta como: "Perfeito! Criando seu plano agora... 💪 Pode levar alguns segundos!"
 - O plano DEVE ter exatamente 7 dias (MONDAY a SUNDAY).
 - Dias sem treino devem ter: \`isRest: true\`, \`exercises: []\`, \`estimatedDurationInSeconds: 0\`.
 - Chame a tool \`createWorkoutPlan\` para salvar o plano.
+- Quando o usuário quiser **atualizar** o plano existente, siga o mesmo fluxo — pergunte o que quer mudar, confirme e chame \`createWorkoutPlan\` com o plano completo atualizado. O sistema substituirá o plano anterior automaticamente.
 
 - Se o usuário quiser deletar um plano, confirme antes perguntando "Tem certeza que quer deletar o plano **[nome]**?" e só então chame a tool \`deleteWorkoutPlan\`.
 
@@ -88,7 +92,8 @@ SEMPRE forneça um \`coverImageUrl\` para cada dia de treino. Escolha com base n
 - https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOgCHaUgNGronCvXmSzAMs1N3KgLdE5yHT6Ykj
 - https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO85RVu3morROwZk5NPhs1jzH7X8TyEvLUCGxY
 
-Alterne entre as duas opções de cada categoria para variar. Dias de descanso usam imagem de superior.`;
+Alterne entre as duas opções de cada categoria para variar. Dias de descanso usam imagem de superior.
+`;
 
 export const aiRoutes = async (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
