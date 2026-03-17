@@ -18,6 +18,7 @@ import { ListWorkoutPlans } from "../usecases/ListWorkoutPlans.js";
 import { UpsertUserTrainData } from "../usecases/UpsertUserTrainData.js";
 import { openai } from "@ai-sdk/openai";
 import { DeleteWorkoutPlan } from "../usecases/DeleteWorkoutPlan.js";
+import { env } from "../lib/env.js";
 
 const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em montagem de planos de treino personalizados.
 
@@ -107,10 +108,17 @@ export const aiRoutes = async (app: FastifyInstance) => {
     url: "/",
     config: {
       rateLimit: {
-        max: 20,
+        max: env.AI_RATE_LIMIT,
         timeWindow: "1d",
-        keyGenerator: (request) => {
-          return request.headers.authorization ?? request.ip;
+        keyGenerator: async (request) => {
+          try {
+            const session = await auth.api.getSession({
+              headers: fromNodeHeaders(request.headers),
+            });
+            return session?.user.id ?? request.ip ?? "anonymous";
+          } catch {
+            return request.ip ?? "anonymous";
+          }
         },
         errorResponseBuilder: () => ({
           error: "Limite de mensagens atingido. Tente novamente amanhã.",
@@ -122,15 +130,19 @@ export const aiRoutes = async (app: FastifyInstance) => {
       tags: ["AI"],
       summary: "Chat with AI personal trainer",
       body: z.object({
-        messages: z.array(
-          z.object({
-            id: z.string(),
-            role: z.enum(["user", "assistant", "system"]),
-            content: z.union([z.string().max(10000), z.array(z.any())]).optional(),
-            parts: z.array(z.any()).max(50),
-            createdAt: z.date().optional(),
-          }),
-        ).max(100),
+        messages: z
+          .array(
+            z.object({
+              id: z.string(),
+              role: z.enum(["user", "assistant", "system"]),
+              content: z
+                .union([z.string().max(10000), z.array(z.any())])
+                .optional(),
+              parts: z.array(z.any()).max(50),
+              createdAt: z.date().optional(),
+            }),
+          )
+          .max(100),
       }),
     },
     handler: async (request, reply) => {

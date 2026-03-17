@@ -13,6 +13,7 @@ const schema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  AI_RATE_LIMIT: z.coerce.number().default(20),
 });
 
 export const env = schema.parse(process.env);
