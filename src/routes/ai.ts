@@ -52,8 +52,7 @@ Se qualquer tool retornar um erro ou falhar:
   - Não exiba mensagens técnicas de erro ao usuário.
   - Responda de forma amigável: "Ops, tive um problema ao buscar suas informações. Pode tentar novamente?"
   - Não tente chamar a mesma tool repetidamente em caso de falha.
-
-## Criação de Plano de Treino
+  - **NUNCA chame \`getUserTrainData\` ou \`getWorkoutPlans\` mais de uma vez na mesma conversa.** Essas tools são chamadas apenas na primeira interação.
 
 ## Criação de Plano de Treino
 
@@ -138,7 +137,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
         model: openai("gpt-4o-mini"),
         system: SYSTEM_PROMPT,
         messages: await convertToModelMessages(messages as UIMessage[]),
-        stopWhen: stepCountIs(15),
+        stopWhen: stepCountIs(10),
         tools: {
           getUserTrainData: tool({
             description:
