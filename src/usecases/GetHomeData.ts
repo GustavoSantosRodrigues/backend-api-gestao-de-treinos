@@ -46,7 +46,8 @@ interface OutputDto {
 
 export class GetHomeData {
   async execute(dto: InputDto): Promise<OutputDto> {
-    const currentDate = dayjs.utc(dto.date);
+    // const currentDate = dayjs.utc(dto.date);
+    const currentDate = dayjs(dto.date);
 
     const workoutPlan = await prisma.workoutPlan.findFirst({
       where: { userId: dto.userId, isActive: true },
@@ -65,8 +66,8 @@ export class GetHomeData {
       (day) => day.weekDay === todayWeekDay,
     );
 
-    const weekStart = currentDate.day(0).startOf("day");
-    const weekEnd = currentDate.day(6).endOf("day");
+    const weekStart = dayjs.utc(dto.date).day(0).startOf("day");
+    const weekEnd = dayjs.utc(dto.date).day(6).endOf("day");
 
     const weekSessions = await prisma.workoutSession.findMany({
       where: {
@@ -104,7 +105,7 @@ export class GetHomeData {
     let workoutStreak = 0;
 
     if (workoutPlan) {
-       workoutStreak = await this.calculateStreak(
+      workoutStreak = await this.calculateStreak(
         workoutPlan.id,
         workoutPlan.workoutDays,
         currentDate,
@@ -113,20 +114,20 @@ export class GetHomeData {
 
     return {
       activeWorkoutPlanId: workoutPlan?.id,
-      todayWorkoutDay: todayWorkoutDay && workoutPlan  
-      ?
-      {
-        workoutPlanId: workoutPlan?.id,
-        id: todayWorkoutDay.id,
-        name: todayWorkoutDay.name,
-        isRest: todayWorkoutDay.isRest,
-        weekDay: todayWorkoutDay.weekDay,
-        estimatedDurationInSeconds: todayWorkoutDay.estimatedDurationInSeconds,
-        coverImageUrl: todayWorkoutDay.coverImageUrl ?? undefined,
-        exercisesCount: todayWorkoutDay.exercises.length,
-      }
-      :
-      undefined,
+      todayWorkoutDay:
+        todayWorkoutDay && workoutPlan
+          ? {
+              workoutPlanId: workoutPlan?.id,
+              id: todayWorkoutDay.id,
+              name: todayWorkoutDay.name,
+              isRest: todayWorkoutDay.isRest,
+              weekDay: todayWorkoutDay.weekDay,
+              estimatedDurationInSeconds:
+                todayWorkoutDay.estimatedDurationInSeconds,
+              coverImageUrl: todayWorkoutDay.coverImageUrl ?? undefined,
+              exercisesCount: todayWorkoutDay.exercises.length,
+            }
+          : undefined,
       workoutStreak,
       consistencyByDay,
     };
