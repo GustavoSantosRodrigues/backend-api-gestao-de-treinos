@@ -19,6 +19,7 @@ import { meRoutes } from "./routes/me.js";
 import { statsRoutes } from "./routes/stats.js";
 import { workoutPlanRoutes } from "./routes/workout-plan.js";
 import { env } from "./lib/env.js";
+import fastifyRateLimit from "@fastify/rate-limit";
 
 const envToLogger = {
   development: {
@@ -66,6 +67,10 @@ await app.register(fastifySwagger, {
 await app.register(fastifyCors, {
   origin: [env.WEB_APP_BASE_URL],
   credentials: true,
+});
+
+await app.register(fastifyRateLimit, {
+  global: false, 
 });
 
 await app.register(fastifyApiReference, {

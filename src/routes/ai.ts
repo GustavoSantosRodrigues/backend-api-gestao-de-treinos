@@ -105,6 +105,19 @@ export const aiRoutes = async (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "POST",
     url: "/",
+    config: {
+      rateLimit: {
+        max: 20,
+        timeWindow: "1d",
+        keyGenerator: (request) => {
+          return request.headers.authorization ?? request.ip;
+        },
+        errorResponseBuilder: () => ({
+          error: "Limite de mensagens atingido. Tente novamente amanhã.",
+          code: "RATE_LIMIT_EXCEEDED",
+        }),
+      },
+    },
     schema: {
       tags: ["AI"],
       summary: "Chat with AI personal trainer",
@@ -113,11 +126,11 @@ export const aiRoutes = async (app: FastifyInstance) => {
           z.object({
             id: z.string(),
             role: z.enum(["user", "assistant", "system"]),
-            content: z.union([z.string(), z.array(z.any())]).optional(),
-            parts: z.array(z.any()),
+            content: z.union([z.string().max(10000), z.array(z.any())]).optional(),
+            parts: z.array(z.any()).max(50),
             createdAt: z.date().optional(),
           }),
-        ),
+        ).max(100),
       }),
     },
     handler: async (request, reply) => {
