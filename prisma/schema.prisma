@@ -14,23 +14,75 @@ datasource db {
 }
 
 model User {
-  id                  String        @id
+  id                  String          @id
   workoutPlans        WorkoutPlan[]
   name                String
   email               String
-  emailVerified       Boolean       @default(false)
+  emailVerified       Boolean         @default(false)
   image               String?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
   sessions            Session[]
   accounts            Account[]
   weightInGrams       Int?
   heightInCentimeters Int?
   age                 Int?
   bodyFatPercentage   Int?
+  nutritionPlans      NutritionPlan[]
 
   @@unique([email])
   @@map("user")
+}
+
+model NutritionPlan {
+  id            String         @id @default(uuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal          String
+  isActive      Boolean        @default(true)
+  coverImageUrl String?
+  notes         String?
+  totalCalories Int
+  totalProtein  Int
+  totalCarbs    Int
+  totalFat      Int
+  days          NutritionDay[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([userId])
+}
+
+model NutritionDay {
+  id              String       @id @default(uuid())
+  nutritionPlanId String
+  nutritionPlan   NutritionPlan @relation(fields: [nutritionPlanId], references: [id], onDelete: Cascade)
+  weekDay         WeekDay?
+  order           Int
+  totalCalories   Int
+  totalProtein    Int
+  totalCarbs      Int
+  totalFat        Int
+  meals           Meal[]
+
+  @@index([nutritionPlanId])
+}
+
+model Meal {
+  id             String       @id @default(uuid())
+  nutritionDayId String
+  nutritionDay   NutritionDay @relation(fields: [nutritionDayId], references: [id], onDelete: Cascade)
+  name           String
+  time           String?
+  calories       Int
+  protein        Int
+  carbs          Int
+  fat            Int
+  foods          String
+  notes          String?
+  order          Int
+
+  @@index([nutritionDayId])
 }
 
 model WorkoutPlan {
@@ -98,14 +150,14 @@ model WorkoutExercise {
 }
 
 model WorkoutSession {
-  id            String        @id @default(uuid())
-  workoutDayId  String
-  workoutDay    WorkoutDay    @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
-  startedAt     DateTime      @db.Timestamptz()
-  completedAt   DateTime?     @db.Timestamptz()
-  exerciseLogs  ExerciseLog[]
-  createdAt     DateTime      @default(now()) @db.Timestamptz()
-  updatedAt     DateTime      @updatedAt @db.Timestamptz()
+  id           String        @id @default(uuid())
+  workoutDayId String
+  workoutDay   WorkoutDay    @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  startedAt    DateTime      @db.Timestamptz()
+  completedAt  DateTime?     @db.Timestamptz()
+  exerciseLogs ExerciseLog[]
+  createdAt    DateTime      @default(now()) @db.Timestamptz()
+  updatedAt    DateTime      @updatedAt @db.Timestamptz()
 }
 
 model Session {
