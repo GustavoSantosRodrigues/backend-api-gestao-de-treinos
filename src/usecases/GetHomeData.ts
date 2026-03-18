@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 
-import { NotFoundError } from "../errors/index.js";
 import { WeekDay } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
 
@@ -33,6 +32,8 @@ interface OutputDto {
     estimatedDurationInSeconds: number;
     coverImageUrl?: string;
     exercisesCount: number;
+    sessionStatus: "not_started" | "in_progress" | "completed";
+    sessionId?: string;
   };
   workoutStreak: number;
   consistencyByDay: Record<
@@ -46,7 +47,6 @@ interface OutputDto {
 
 export class GetHomeData {
   async execute(dto: InputDto): Promise<OutputDto> {
-    // const currentDate = dayjs.utc(dto.date);
     const currentDate = dayjs(dto.date);
 
     const workoutPlan = await prisma.workoutPlan.findFirst({
@@ -112,12 +112,23 @@ export class GetHomeData {
       );
     }
 
+    const todaySession = todayWorkoutDay?.sessions.find((s) => {
+      const sessionDate = dayjs(s.startedAt).format("YYYY-MM-DD");
+      return sessionDate === currentDate.format("YYYY-MM-DD");
+    });
+
+    const sessionStatus = !todaySession
+      ? "not_started"
+      : todaySession.completedAt
+        ? "completed"
+        : "in_progress";
+
     return {
       activeWorkoutPlanId: workoutPlan?.id,
       todayWorkoutDay:
         todayWorkoutDay && workoutPlan
           ? {
-              workoutPlanId: workoutPlan?.id,
+              workoutPlanId: workoutPlan.id,
               id: todayWorkoutDay.id,
               name: todayWorkoutDay.name,
               isRest: todayWorkoutDay.isRest,
@@ -126,6 +137,8 @@ export class GetHomeData {
                 todayWorkoutDay.estimatedDurationInSeconds,
               coverImageUrl: todayWorkoutDay.coverImageUrl ?? undefined,
               exercisesCount: todayWorkoutDay.exercises.length,
+              sessionStatus,
+              sessionId: todaySession?.id,
             }
           : undefined,
       workoutStreak,
