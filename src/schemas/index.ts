@@ -52,6 +52,8 @@ export const HomeDataSchema = z.object({
       estimatedDurationInSeconds: z.number(),
       coverImageUrl: z.url().optional(),
       exercisesCount: z.number(),
+      sessionStatus: z.enum(["not_started", "in_progress", "completed"]),
+      sessionId: z.uuid().optional(),
     })
     .optional(),
   workoutStreak: z.number(),
@@ -63,7 +65,6 @@ export const HomeDataSchema = z.object({
     }),
   ),
 });
-
 export const GetWorkoutDaySchema = z.object({
   id: z.uuid(),
   name: z.string(),
