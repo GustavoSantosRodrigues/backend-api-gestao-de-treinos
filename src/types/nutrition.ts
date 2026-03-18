@@ -63,7 +63,6 @@ export interface NutritionPlan {
   userId: string
   goal: string
   isActive: boolean
-  coverImageUrl?: string | null
   notes?: string | null
   totalCalories: number
   totalProtein: number
