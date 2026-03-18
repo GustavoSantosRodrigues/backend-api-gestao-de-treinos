@@ -16,8 +16,84 @@ import { openai } from "@ai-sdk/openai";
 import { env } from "../lib/env.js";
 import { listNutritionPlans } from "../usecases/nutrition/list-nutrition-plans.js";
 import { createNutritionPlan } from "../usecases/nutrition/create-nutrition-plan.js";
+import { updateNutritionPlan } from "../usecases/nutrition/update-nutrition-plan.js";
 import { deleteNutritionPlan } from "../usecases/nutrition/delete-nutrition-plan.js";
 import { GetUserTrainData } from "../usecases/GetUserTrainData.js";
+
+const DAYS_SCHEMA = z
+  .array(
+    z.object({
+      weekDay: z
+        .nativeEnum(WeekDay)
+        .optional()
+        .describe(
+          "Use apenas se houver variação entre os dias. Omitir em plano único. Nunca repetir o mesmo weekDay.",
+        ),
+      order: z.number().int().min(1),
+      meals: z
+        .array(
+          z.object({
+            name: z
+              .string()
+              .min(1)
+              .max(80)
+              .describe(
+                "Nome da refeição, por exemplo: Café da manhã, Almoço, Lanche, Jantar, Pré-treino ou Pós-treino.",
+              ),
+            time: z
+              .string()
+              .regex(/^([01]\d|2[0-3]):([0-5]\d)$/)
+              .optional()
+              .describe('Horário no formato HH:MM, por exemplo: "07:30".'),
+            calories: z.number().positive(),
+            protein: z.number().nonnegative(),
+            carbs: z.number().nonnegative(),
+            fat: z.number().nonnegative(),
+            order: z.number().int().min(1),
+            notes: z
+              .string()
+              .max(300)
+              .optional()
+              .describe(
+                "Substituições simples para a refeição. Deve ser preenchido em todas as refeições.",
+              ),
+            foods: z
+              .array(
+                z.object({
+                  name: z.string().min(1).max(80).describe("Nome do alimento."),
+                  quantity: z.number().positive(),
+                  unit: z
+                    .string()
+                    .min(1)
+                    .max(20)
+                    .describe(
+                      "Unidade de medida, por exemplo: g, ml, unidade, colher ou xícara.",
+                    ),
+                  calories: z.number().nonnegative(),
+                  protein: z.number().nonnegative(),
+                  carbs: z.number().nonnegative(),
+                  fat: z.number().nonnegative(),
+                }),
+              )
+              .min(1)
+              .max(8),
+          }),
+        )
+        .min(3)
+        .max(6),
+    }),
+  )
+  .min(1)
+  .max(7);
+
+const GOAL_SCHEMA = z.enum([
+  "cutting",
+  "ganho de massa",
+  "recomposição corporal",
+  "emagrecimento",
+  "manutenção",
+  "saúde e qualidade de vida",
+]);
 
 const SYSTEM_PROMPT = `Você é um assistente virtual de nutrição esportiva, focado em montar planos alimentares gerais com base em boas práticas. Você não substitui acompanhamento profissional individual.
 
@@ -78,7 +154,7 @@ Se qualquer tool retornar erro:
 ## Criação do Plano Nutricional
 
 ### Cálculo de macros
-- Use **Harris-Benedict revisada** para calcular a TMB sem distinção de sexo:
+- Use a fórmula de **Harris-Benedict revisada** como base estimativa padrão:
   - TMB = 88.362 + (13.397 × peso_kg) + (4.799 × altura_cm) − (5.677 × idade)
   - Aplique o fator de atividade sobre a TMB:
     - Sedentário: × 1.2 | Levemente ativo: × 1.375 | Moderadamente ativo: × 1.55 | Muito ativo: × 1.725 | Extremamente ativo: × 1.9
@@ -117,11 +193,14 @@ Se qualquer tool retornar erro:
 - Um plano que a pessoa consegue seguir vale mais do que um plano teoricamente perfeito.
 
 ### Boas práticas
-- Inclua nos \`notes\` de cada refeição sugestões de substituição simples (ex: "Pode trocar o frango por atum em lata").
+- **Sempre** preencha o campo \`notes\` de **todas** as refeições com pelo menos uma substituição simples. Nunca deixe \`notes\` vazio.
 - O campo \`time\` deve ser sempre no formato HH:MM (ex: "07:30"). Nunca use texto como "manhã" ou "depois do almoço".
 - **ANTES de chamar \`createNutritionPlan\`**, envie: "Perfeito! Criando seu plano agora... 🥗 Pode levar alguns segundos!"
-- Após criar, informe calorias totais e macros (proteína, carboidrato, gordura) de forma resumida e amigável.
-- **Sempre** preencha o campo \`notes\` de **todas** as refeições com pelo menos uma substituição simples. Nunca deixe \`notes\` vazio. Exemplo: "Pode trocar o iogurte grego por iogurte natural desnatado" ou "Pode substituir a aveia por granola sem açúcar".
+- **ANTES de chamar \`updateNutritionPlan\`**, envie: "Atualizando seu plano... 🥗 Pode levar alguns segundos!"
+- Após criar ou atualizar, informe calorias totais e macros de forma resumida e amigável.
+- Quando o usuário quiser ajustar o plano (substituições, trocar alimentos, etc), use \`updateNutritionPlan\` em vez de deletar e recriar.
+- Para atualizar, use o contexto de \`getNutritionPlans\` já obtido na primeira interação. Não chame novamente na mesma conversa. Se o planId não estiver disponível no contexto, peça ao usuário que reinicie a conversa.
+- Ao atualizar, mande o plano completo com todos os dias e refeições — inclusive os que não mudaram.
 - Se o usuário quiser deletar um plano, confirme antes: "Tem certeza que quer deletar este plano?" e só então chame \`deleteNutritionPlan\`.
 `;
 
@@ -190,14 +269,6 @@ export const aiNutritionRoutes = async (app: FastifyInstance) => {
             description:
               "Busca os dados corporais do usuário (nome, peso, altura, idade, % gordura). Chame apenas uma vez na primeira interação.",
             inputSchema: z.object({}),
-/*************  ✨ Windsurf Command ⭐  *************/
-/**
- * Chama a tool `getUserTrainData` com o userId atual.
- * Retorna a promessa resolvida com os dados do usuário.
- * @returns {Promise<OutputDto | null>} - Promessa resolvida com os dados do usuário ou null
- */
-
-/*******  ed54336e-f024-4ebe-abb6-33e4152e4e14  *******/
             execute: async () => {
               const getUserTrainData = new GetUserTrainData();
               return getUserTrainData.execute({ userId });
@@ -217,88 +288,34 @@ export const aiNutritionRoutes = async (app: FastifyInstance) => {
             description:
               "Cria um plano nutricional completo com refeições detalhadas.",
             inputSchema: z.object({
-              goal: z.enum([
-                "cutting",
-                "ganho de massa",
-                "recomposição corporal",
-                "emagrecimento",
-                "manutenção",
-                "saúde e qualidade de vida",
-              ]),
+              goal: GOAL_SCHEMA,
               notes: z
                 .string()
                 .max(300)
                 .optional()
                 .describe("Observações gerais do plano"),
-              totalCalories: z.number().positive(),
-              totalProtein: z.number().nonnegative(),
-              totalCarbs: z.number().nonnegative(),
-              totalFat: z.number().nonnegative(),
-              days: z
-                .array(
-                  z.object({
-                    weekDay: z
-                      .nativeEnum(WeekDay)
-                      .optional()
-                      .describe(
-                        "Omitir se for plano único igual para todos os dias. Nunca repita o mesmo weekDay.",
-                      ),
-                    order: z.number().int().nonnegative(),
-                    meals: z
-                      .array(
-                        z.object({
-                          name: z
-                            .string()
-                            .min(1)
-                            .max(80)
-                            .describe(
-                              "Café da manhã, Almoço, Lanche, Jantar, Pré-treino, Pós-treino",
-                            ),
-                          time: z
-                            .string()
-                            .regex(/^([01]\d|2[0-3]):([0-5]\d)$/)
-                            .optional()
-                            .describe("Horário no formato HH:MM ex: 07:30"),
-                          calories: z.number().positive(),
-                          protein: z.number().nonnegative(),
-                          carbs: z.number().nonnegative(),
-                          fat: z.number().nonnegative(),
-                          order: z.number().int().nonnegative(),
-                          notes: z
-                            .string()
-                            .max(300)
-                            .optional()
-                            .describe("Substituições sugeridas"),
-                          foods: z
-                            .array(
-                              z.object({
-                                name: z.string().min(1).max(80),
-                                quantity: z.number().positive(),
-                                unit: z
-                                  .string()
-                                  .min(1)
-                                  .max(20)
-                                  .describe("g, ml, unidade, colher, xícara"),
-                                calories: z.number().nonnegative(),
-                                protein: z.number().nonnegative(),
-                                carbs: z.number().nonnegative(),
-                                fat: z.number().nonnegative(),
-                              }),
-                            )
-                            .min(1)
-                            .max(8),
-                        }),
-                      )
-                      .min(3)
-                      .max(6),
-                  }),
-                )
-                .min(1)
-                .max(7),
+              days: DAYS_SCHEMA,
             }),
             execute: async (data) => {
               const plan = await createNutritionPlan({ userId, ...data });
               return { nutritionPlanCreated: true, planId: plan.id };
+            },
+          }),
+
+          updateNutritionPlan: tool({
+          description: `Atualiza um plano nutricional existente sem recriar do zero.
+Use quando o usuário quiser ajustar substituições, trocar alimentos, modificar macros ou refeições.
+Use o contexto de getNutritionPlans já obtido na primeira interação para identificar o planId e o plano atual.
+Mande sempre o plano completo atualizado — todos os dias e refeições, inclusive os que não mudaram.`,
+            inputSchema: z.object({
+              planId: z.string().describe("ID do plano a ser atualizado"),
+              goal: GOAL_SCHEMA.optional(),
+              notes: z.string().max(300).optional(),
+              days: DAYS_SCHEMA.optional(),
+            }),
+            execute: async (data) => {
+              const plan = await updateNutritionPlan({ userId, ...data });
+              return { nutritionPlanUpdated: true, planId: plan?.id };
             },
           }),
 
