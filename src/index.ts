@@ -20,6 +20,8 @@ import { statsRoutes } from "./routes/stats.js";
 import { workoutPlanRoutes } from "./routes/workout-plan.js";
 import { env } from "./lib/env.js";
 import fastifyRateLimit from "@fastify/rate-limit";
+import { nutritionRoutes } from "./routes/nutrition.js";
+import { aiNutritionRoutes } from "./routes/ai-nutrition.js";
 
 const envToLogger = {
   development: {
@@ -64,6 +66,7 @@ await app.register(fastifySwagger, {
   transform: jsonSchemaTransform,
 });
 
+
 await app.register(fastifyCors, {
   origin: [env.WEB_APP_BASE_URL],
   credentials: true,
@@ -98,6 +101,8 @@ await app.register(meRoutes, { prefix: "/me" });
 await app.register(statsRoutes, { prefix: "/stats" });
 await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 await app.register(aiRoutes, { prefix: "/ai" });
+await app.register(aiNutritionRoutes);
+await app.register(nutritionRoutes); 
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",
