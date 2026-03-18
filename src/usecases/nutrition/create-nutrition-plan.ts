@@ -32,7 +32,6 @@ interface NutritionDayInput {
 export interface CreateNutritionPlanDTO {
   userId: string;
   goal: string;
-  coverImageUrl?: string;
   notes?: string;
   totalCalories: number;
   totalProtein: number;
@@ -69,7 +68,6 @@ export async function createNutritionPlan(dto: CreateNutritionPlanDTO) {
     data: {
       userId: dto.userId,
       goal: dto.goal,
-      coverImageUrl: dto.coverImageUrl,
       notes: dto.notes?.trim() || undefined,
       totalCalories: dto.totalCalories,
       totalProtein: dto.totalProtein,

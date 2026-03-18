@@ -40,7 +40,6 @@ model NutritionPlan {
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   goal          String
   isActive      Boolean        @default(true)
-  coverImageUrl String?
   notes         String?
   totalCalories Int
   totalProtein  Int
