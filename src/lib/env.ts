@@ -14,6 +14,8 @@ const schema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
   AI_RATE_LIMIT: z.coerce.number().default(20),
+  DOCS_USERNAME: z.string().default("admin"),
+  DOCS_PASSWORD: z.string().default("admin"),
 });
 
 export const env = schema.parse(process.env);

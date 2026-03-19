@@ -76,6 +76,30 @@ await app.register(fastifyRateLimit, {
   global: false, 
 });
 
+app.addHook('onRequest', async (request, reply) => {
+  if (!request.url.startsWith('/docs') && !request.url.startsWith('/swagger.json')) {
+    return
+  }
+
+  const authHeader = request.headers['authorization']
+  
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    reply.header('WWW-Authenticate', 'Basic realm="API Docs"')
+    reply.status(401).send({ error: 'Unauthorized' })
+    return
+  }
+
+  const base64 = authHeader.split(' ')[1]
+  const decoded = Buffer.from(base64, 'base64').toString('utf-8')
+  const [username, password] = decoded.split(':')
+
+if (username !== env.DOCS_USERNAME || password !== env.DOCS_PASSWORD) {
+    reply.header('WWW-Authenticate', 'Basic realm="API Docs"')
+    reply.status(401).send({ error: 'Unauthorized' })
+    return
+  }
+})
+
 await app.register(fastifyApiReference, {
   routePrefix: "/docs",
   configuration: {
