@@ -147,7 +147,7 @@ Exemplo ERRADO:
 Séries e reps:
 - Hipertrofia: 4 séries, 8-12 reps, 90s descanso
 - Força: 5 séries, 4-6 reps, 3min descanso
-- Saúde/emagrecimento: 3-4 séries, 12-15 reps, 60s descanso
+- Saúde/emagrecimento: 4 séries, 12-15 reps, 60s descanso
 
 ---
 
