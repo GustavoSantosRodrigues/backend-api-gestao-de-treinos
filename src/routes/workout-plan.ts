@@ -28,6 +28,7 @@ import { StartWorkoutSession } from "../usecases/StartWorkoutSession.js";
 import { UpdateWorkoutSession } from "../usecases/UpdateWorkoutSession.js";
 import { LogExerciseSet } from "../usecases/LogExerciseSet.js";
 import { GetExerciseLogs } from "../usecases/GetExerciseLogs.js";
+import { ReorderExercises } from "../usecases/ReorderExercises.js";
 
 export const workoutPlanRoutes = async (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -485,6 +486,54 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
         });
 
         return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  // Reordenar exercícios
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/workout-plans/:workoutPlanId/days/:workoutDayId/exercises/reorder",
+    schema: {
+      tags: ["Workout Plan"],
+      summary: "Reorder exercises",
+      params: z.object({
+        workoutPlanId: z.string(),
+        workoutDayId: z.string(),
+      }),
+      body: z.object({
+        exercises: z.array(
+          z.object({
+            id: z.string(),
+            order: z.number(),
+          }),
+        ),
+      }),
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const reorderExercises = new ReorderExercises();
+        await reorderExercises.execute({
+          workoutDayId: request.params.workoutDayId,
+          exercises: request.body.exercises,
+        });
+
+        return reply.status(200).send({ success: true });
       } catch (error) {
         app.log.error(error);
         return reply.status(500).send({

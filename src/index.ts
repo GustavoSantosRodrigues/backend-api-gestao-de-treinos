@@ -12,7 +12,7 @@ import {
 } from "fastify-type-provider-zod";
 import z from "zod";
 
-import { auth } from './lib/index.js';
+import { auth } from "./lib/index.js";
 import { aiRoutes } from "./routes/ai.js";
 import { homeRoutes } from "./routes/home.js";
 import { meRoutes } from "./routes/me.js";
@@ -26,17 +26,16 @@ import { aiNutritionRoutes } from "./routes/ai-nutrition.js";
 const envToLogger = {
   development: {
     transport: {
-      target: 'pino-pretty',
+      target: "pino-pretty",
       options: {
-        translateTime: 'HH:MM:ss Z',
-        ignore: 'pid,hostname',
+        translateTime: "HH:MM:ss Z",
+        ignore: "pid,hostname",
       },
     },
   },
   production: true,
   test: false,
-}
-
+};
 
 const app = Fastify({
   logger: envToLogger[env.NODE_ENV],
@@ -66,39 +65,42 @@ await app.register(fastifySwagger, {
   transform: jsonSchemaTransform,
 });
 
-
 await app.register(fastifyCors, {
   origin: [env.WEB_APP_BASE_URL],
   credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 });
 
 await app.register(fastifyRateLimit, {
-  global: false, 
+  global: false,
 });
 
-app.addHook('onRequest', async (request, reply) => {
-  if (!request.url.startsWith('/docs') && !request.url.startsWith('/swagger.json')) {
-    return
+app.addHook("onRequest", async (request, reply) => {
+  if (
+    !request.url.startsWith("/docs") &&
+    !request.url.startsWith("/swagger.json")
+  ) {
+    return;
   }
 
-  const authHeader = request.headers['authorization']
-  
-  if (!authHeader || !authHeader.startsWith('Basic ')) {
-    reply.header('WWW-Authenticate', 'Basic realm="API Docs"')
-    reply.status(401).send({ error: 'Unauthorized' })
-    return
+  const authHeader = request.headers["authorization"];
+
+  if (!authHeader || !authHeader.startsWith("Basic ")) {
+    reply.header("WWW-Authenticate", 'Basic realm="API Docs"');
+    reply.status(401).send({ error: "Unauthorized" });
+    return;
   }
 
-  const base64 = authHeader.split(' ')[1]
-  const decoded = Buffer.from(base64, 'base64').toString('utf-8')
-  const [username, password] = decoded.split(':')
+  const base64 = authHeader.split(" ")[1];
+  const decoded = Buffer.from(base64, "base64").toString("utf-8");
+  const [username, password] = decoded.split(":");
 
-if (username !== env.DOCS_USERNAME || password !== env.DOCS_PASSWORD) {
-    reply.header('WWW-Authenticate', 'Basic realm="API Docs"')
-    reply.status(401).send({ error: 'Unauthorized' })
-    return
+  if (username !== env.DOCS_USERNAME || password !== env.DOCS_PASSWORD) {
+    reply.header("WWW-Authenticate", 'Basic realm="API Docs"');
+    reply.status(401).send({ error: "Unauthorized" });
+    return;
   }
-})
+});
 
 await app.register(fastifyApiReference, {
   routePrefix: "/docs",
@@ -126,7 +128,7 @@ await app.register(statsRoutes, { prefix: "/stats" });
 await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 await app.register(aiRoutes, { prefix: "/ai" });
 await app.register(aiNutritionRoutes);
-await app.register(nutritionRoutes); 
+await app.register(nutritionRoutes);
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",
@@ -197,7 +199,7 @@ app.route({
 });
 
 try {
-  await app.listen({host: '0.0.0.0', port: Number(env.PORT) || 8081 });
+  await app.listen({ host: "0.0.0.0", port: Number(env.PORT) || 8081 });
 } catch (err) {
   app.log.error(err);
   process.exit(1);
