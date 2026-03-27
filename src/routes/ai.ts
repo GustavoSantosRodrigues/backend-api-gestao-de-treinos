@@ -357,7 +357,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
       const { messages } = request.body;
 
       const result = streamText({
-        model: openai("gpt-4o"),
+        model: openai("gpt-4o-mini"),
         system: SYSTEM_PROMPT,
         messages: await convertToModelMessages(messages as UIMessage[]),
         stopWhen: stepCountIs(15),
