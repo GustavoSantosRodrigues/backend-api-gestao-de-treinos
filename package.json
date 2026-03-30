@@ -10,7 +10,8 @@
     "build": "npx prisma generate && tsc",
     "start": "node dist/index.js",
     "migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
-    "migrate:dev": "prisma migrate dev"
+    "migrate:dev": "prisma migrate dev",
+    "seed:exercises": "tsx prisma/seed-exercises.ts"
   },
   "engines": {
     "node": "24.x"
