@@ -30,6 +30,7 @@ interface OutputDto {
     restTimeInSeconds: number;
     weightSuggestion?: string;
     notes?: string;
+    gifUrl?: string;
     logs: Array<{
       id: string;
       setNumber: number;
@@ -61,6 +62,7 @@ export class GetWorkoutDay {
         exercises: {
           orderBy: { order: "asc" },
           include: {
+            exercise: true,
             logs: {
               orderBy: { setNumber: "asc" },
             },
@@ -91,6 +93,7 @@ export class GetWorkoutDay {
         restTimeInSeconds: exercise.restTimeInSeconds,
         weightSuggestion: exercise.weightSuggestion ?? undefined,
         notes: exercise.notes ?? undefined,
+        gifUrl: exercise.exercise?.gifUrl ?? undefined,
         logs: exercise.logs.map((log) => ({
           id: log.id,
           setNumber: log.setNumber,
