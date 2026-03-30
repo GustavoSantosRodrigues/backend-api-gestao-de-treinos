@@ -10,6 +10,7 @@ interface ExerciseDto {
   weightSuggestion?: string;
   notes?: string;
   restTimeInSeconds: number;
+  exerciseId?: string; // 👈 novo
 }
 
 interface WorkoutDayDto {
@@ -54,7 +55,6 @@ export class UpdateWorkoutPlan {
     }
 
     return prisma.$transaction(async (tx) => {
-      // Atualiza nome do plano se fornecido
       if (dto.name) {
         await tx.workoutPlan.update({
           where: { id: workoutPlan.id },
@@ -62,16 +62,14 @@ export class UpdateWorkoutPlan {
         });
       }
 
-      // Atualiza apenas os dias fornecidos
       if (dto.workoutDays && dto.workoutDays.length > 0) {
         for (const dayDto of dto.workoutDays) {
           const existingDay = workoutPlan.workoutDays.find(
-            (d) => d.weekDay === dayDto.weekDay
+            (d) => d.weekDay === dayDto.weekDay,
           );
 
           if (!existingDay) continue;
 
-          // Atualiza dados do dia
           await tx.workoutDay.update({
             where: { id: existingDay.id },
             data: {
@@ -84,7 +82,6 @@ export class UpdateWorkoutPlan {
             },
           });
 
-          // Se vieram exercícios, recria os exercícios do dia
           if (dayDto.exercises !== undefined) {
             await tx.workoutExercise.deleteMany({
               where: { workoutDayId: existingDay.id },
@@ -102,6 +99,7 @@ export class UpdateWorkoutPlan {
                   restTimeInSeconds: ex.restTimeInSeconds,
                   weightSuggestion: ex.weightSuggestion ?? null,
                   notes: ex.notes ?? null,
+                  exerciseId: ex.exerciseId ?? null, // 👈 novo
                 })),
               });
             }

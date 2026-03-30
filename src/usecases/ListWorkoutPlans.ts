@@ -24,6 +24,9 @@ interface OutputDto {
       sets: number;
       reps: number;
       restTimeInSeconds: number;
+      weightSuggestion?: string;
+      notes?: string;
+      exerciseId?: string;
     }>;
   }>;
 }
@@ -63,6 +66,9 @@ export class ListWorkoutPlans {
           sets: exercise.sets,
           reps: exercise.reps,
           restTimeInSeconds: exercise.restTimeInSeconds,
+          weightSuggestion: exercise.weightSuggestion ?? undefined,
+          notes: exercise.notes ?? undefined,
+          exerciseId: exercise.exerciseId ?? undefined,
         })),
       })),
     }));

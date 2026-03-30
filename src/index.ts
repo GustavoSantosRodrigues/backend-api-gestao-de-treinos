@@ -22,6 +22,8 @@ import { env } from "./lib/env.js";
 import fastifyRateLimit from "@fastify/rate-limit";
 import { nutritionRoutes } from "./routes/nutrition.js";
 import { aiNutritionRoutes } from "./routes/ai-nutrition.js";
+import { exercisesRoutes } from "./routes/exercises.js";
+
 
 const envToLogger = {
   development: {
@@ -129,6 +131,7 @@ await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 await app.register(aiRoutes, { prefix: "/ai" });
 await app.register(aiNutritionRoutes);
 await app.register(nutritionRoutes);
+await app.register(exercisesRoutes);
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",

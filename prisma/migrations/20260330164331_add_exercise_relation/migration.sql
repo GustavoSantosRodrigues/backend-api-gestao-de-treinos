@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Exercise" ALTER COLUMN "createdAt" SET DATA TYPE TIMESTAMPTZ;
