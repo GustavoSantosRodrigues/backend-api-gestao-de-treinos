@@ -261,6 +261,79 @@ const exercises: ExerciseSeed[] = [
   },
 
   // ─── OMBRO ────────────────────────────────────────────────
+  // ─── OMBRO — NOVOS ────────────────────────────────────────
+  {
+    id: "elevacao-lateral-cabo",
+    name: "Elevação Lateral no Cabo",
+    muscles: ["ombro"],
+    gifUrl: "",
+  },
+  {
+    id: "elevacao-lateral-maquina-unilateral",
+    name: "Elevação Lateral na Máquina Unilateral",
+    muscles: ["ombro"],
+    gifUrl: "",
+  },
+  {
+    id: "elevacao-frontal-barra",
+    name: "Elevação Frontal com Barra",
+    muscles: ["ombro"],
+    gifUrl: "",
+  },
+  {
+    id: "elevacao-frontal-cabo",
+    name: "Elevação Frontal no Cabo",
+    muscles: ["ombro"],
+    gifUrl: "",
+  },
+  {
+    id: "desenvolvimento-arnold",
+    name: "Desenvolvimento Arnold",
+    muscles: ["ombro"],
+    gifUrl: "",
+  },
+  {
+    id: "face-pull-cabo",
+    name: "Face Pull no Cabo",
+    muscles: ["ombro"],
+    gifUrl: "",
+  },
+  {
+    id: "ombro-invertido-maquina",
+    name: "Crucifixo Invertido na Máquina",
+    muscles: ["ombro"],
+    gifUrl: "",
+  },
+  {
+    id: "elevacao-posterior-halter",
+    name: "Elevação Posterior com Halter",
+    muscles: ["ombro"],
+    gifUrl: "",
+  },
+  {
+    id: "desenvolvimento-smith",
+    name: "Desenvolvimento no Smith",
+    muscles: ["ombro"],
+    gifUrl: "",
+  },
+  {
+    id: "upright-row-barra",
+    name: "Remada Alta com Barra",
+    muscles: ["ombro", "trapezio"],
+    gifUrl: "",
+  },
+  {
+    id: "upright-row-halter",
+    name: "Remada Alta com Halter",
+    muscles: ["ombro", "trapezio"],
+    gifUrl: "",
+  },
+  {
+    id: "upright-row-cabo",
+    name: "Remada Alta no Cabo",
+    muscles: ["ombro", "trapezio"],
+    gifUrl: "",
+  },
   {
     id: "desenvolvimento-maquina",
     name: "Desenvolvimento na Máquina",

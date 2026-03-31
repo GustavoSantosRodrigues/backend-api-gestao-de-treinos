@@ -186,13 +186,14 @@ Sua memória de treino está completamente vazia. Não existe um único exercíc
 - "Braços" → 2 buscas: \`["biceps"]\`, \`["triceps"]\`
 
 ### Quantidade de exercícios por dia (OBRIGATÓRIO):
-- Mínimo: **7 exercícios** por dia de treino
-- Máximo: **8 exercícios** por dia de treino
+- EXATAMENTE **7 exercícios** por dia de treino — nem mais, nem menos
+- Escolha os 7 mais relevantes e variados para o grupo muscular do dia
 - Dias de descanso: 0 exercícios
 - Dias compostos: divida os exercícios proporcionalmente entre os grupos (ex: Peito+Tríceps → 4 peito + 3 ou 4 tríceps)
 
 ### Séries, Repetições e Descanso (OBRIGATÓRIO — SEM EXCEÇÃO):
-- TODOS os exercícios devem ter exatamente **4 séries** — nunca 3, nunca 2
+- TODOS os exercícios devem ter exatamente **4 séries** — NUNCA 3, NUNCA 2, NUNCA 5
+- Se você usar qualquer número diferente de 4 séries, está violando uma regra crítica
 - Repetições: entre 8 e 12 reps por série (escolha conforme o exercício)
 - Tempo de descanso entre séries:
   - Exercícios compostos (supino, agachamento, remada, levantamento terra, desenvolvimento): **90 segundos**
@@ -532,14 +533,22 @@ export const aiRoutes = async (app: FastifyInstance) => {
                   "Array com exatamente 7 dias de treino (MONDAY a SUNDAY)",
                 ),
             }),
-            execute: async (input) => {
-              const createWorkoutPlan = new CreateWorkoutPlan();
-              return createWorkoutPlan.execute({
-                userId,
-                name: input.name,
-                workoutDays: input.workoutDays,
-              });
-            },
+           execute: async (input) => {
+  console.log("📝 createWorkoutPlan INPUT:", JSON.stringify(input, null, 2));
+  const createWorkoutPlan = new CreateWorkoutPlan();
+  try {
+    const result = await createWorkoutPlan.execute({
+      userId,
+      name: input.name,
+      workoutDays: input.workoutDays,
+    });
+    console.log("✅ createWorkoutPlan SUCCESS:", result.id);
+    return result;
+  } catch (error) {
+    console.error("❌ createWorkoutPlan ERROR:", error);
+    throw error;
+  }
+},
           }),
 
           deleteWorkoutPlan: tool({
