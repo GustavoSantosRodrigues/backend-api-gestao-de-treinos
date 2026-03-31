@@ -295,7 +295,7 @@ export const aiNutritionRoutes = async (app: FastifyInstance) => {
         model: openai("gpt-4o-mini"),
         system: SYSTEM_PROMPT,
         messages: await convertToModelMessages(messages as UIMessage[]),
-        stopWhen: stepCountIs(10),
+        stopWhen: stepCountIs(40),
         tools: {
           getUserData: tool({
             description:

@@ -401,7 +401,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
         model: openai("gpt-4o-mini"),
         system: SYSTEM_PROMPT,
         messages: await convertToModelMessages(messages as UIMessage[]),
-        stopWhen: stepCountIs(50),
+        stopWhen: stepCountIs(70),
         tools: {
           // ─── 👇 NOVA TOOL ──────────────────────────────────────────────
           searchExercises: tool({
