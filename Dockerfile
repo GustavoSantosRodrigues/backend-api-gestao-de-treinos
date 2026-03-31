@@ -16,8 +16,8 @@ FROM deps AS build
 COPY . .
 
 RUN npx prisma generate
-RUN npm run build
-RUN cp -r src/generated ./dist/generated 2>/dev/null || true
+RUN npx tsc
+RUN cp -r src/generated ./dist/generated
 
 # Production
 FROM node:24-slim AS production
