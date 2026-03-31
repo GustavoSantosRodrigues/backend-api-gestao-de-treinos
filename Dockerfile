@@ -15,7 +15,8 @@ FROM deps AS build
 
 COPY . .
 
-RUN npm run build && cp -r src/generated ./dist/generated || true
+RUN npm run build
+RUN cp -r src/generated ./dist/generated 2>/dev/null || true
 
 # Production
 FROM node:24-slim AS production
