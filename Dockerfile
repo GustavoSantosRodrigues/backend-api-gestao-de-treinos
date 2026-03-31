@@ -1,4 +1,4 @@
-FROM node:24-slim AS base
+FROM node:24-bookworm-slim AS base
 
 WORKDIR /app
 
@@ -19,9 +19,11 @@ RUN npx prisma generate
 RUN npx tsc
 
 # Production
-FROM node:24-slim AS production
+FROM node:24-bookworm-slim AS production
 
 WORKDIR /app
+
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
