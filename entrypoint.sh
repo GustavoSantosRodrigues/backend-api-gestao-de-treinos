@@ -18,8 +18,5 @@ echo "▶ Resolving existing migrations (safe to ignore errors)..."
 echo "▶ Running database migrations..."
 ./node_modules/.bin/prisma migrate deploy
 
-echo "▶ Seeding exercises..."
-node dist/seed-exercises.js
-
 echo "▶ Starting application..."
 exec node dist/index.js
