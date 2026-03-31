@@ -9,7 +9,6 @@ const exerciseSchema = z.object({
   name: z.string().nullable(),
   muscles: z.array(z.string()),
   gifUrl: z.string().nullable(),
-  createdAt: z.date(),
 });
 
 export async function exercisesRoutes(app: FastifyInstance) {
@@ -41,7 +40,7 @@ export async function exercisesRoutes(app: FastifyInstance) {
         },
         orderBy: { name: "asc" },
         take: 15,
-        select: { id: true, name: true, muscles: true, gifUrl: true, createdAt: true },
+        select: { id: true, name: true, muscles: true, gifUrl: true },
       });
 
       return reply.send(exercises);
@@ -67,7 +66,7 @@ export async function exercisesRoutes(app: FastifyInstance) {
 
       const exercise = await prisma.exercise.findUnique({
         where: { id },
-        select: { id: true, name: true, muscles: true, gifUrl: true, createdAt: true },
+        select: { id: true, name: true, muscles: true, gifUrl: true },
       });
 
       if (!exercise) {
