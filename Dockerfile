@@ -15,7 +15,8 @@ FROM deps AS build
 
 COPY . .
 
-RUN npm run build && cp -r src/generated ./dist/generated
+RUN npx prisma generate
+RUN npx tsc
 
 # Production
 FROM node:24-slim AS production
@@ -28,5 +29,8 @@ COPY prisma ./prisma/
 RUN npm ci --omit=dev
 
 COPY --from=build /app/dist ./dist
+COPY entrypoint.sh ./entrypoint.sh
 
-CMD ["node", "dist/index.js"]
+RUN chmod +x entrypoint.sh
+
+CMD ["sh", "entrypoint.sh"]

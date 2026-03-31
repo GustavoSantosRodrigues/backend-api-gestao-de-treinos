@@ -6,10 +6,9 @@ import z from "zod";
 
 const exerciseSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  name: z.string().nullable(),
   muscles: z.array(z.string()),
-  gifUrl: z.string(),
-  createdAt: z.date(),
+  gifUrl: z.string().nullable(),
 });
 
 export async function exercisesRoutes(app: FastifyInstance) {
@@ -36,13 +35,12 @@ export async function exercisesRoutes(app: FastifyInstance) {
       const exercises = await prisma.exercise.findMany({
         where: {
           ...(muscleList && {
-            OR: [
-              { muscles: { hasSome: muscleList } },
-            ],
+            OR: [{ muscles: { hasSome: muscleList } }],
           }),
         },
         orderBy: { name: "asc" },
         take: 15,
+        select: { id: true, name: true, muscles: true, gifUrl: true },
       });
 
       return reply.send(exercises);
@@ -66,7 +64,10 @@ export async function exercisesRoutes(app: FastifyInstance) {
     handler: async (req, reply) => {
       const { id } = req.params;
 
-      const exercise = await prisma.exercise.findUnique({ where: { id } });
+      const exercise = await prisma.exercise.findUnique({
+        where: { id },
+        select: { id: true, name: true, muscles: true, gifUrl: true },
+      });
 
       if (!exercise) {
         return reply.status(404).send({ error: "Exercise not found" });

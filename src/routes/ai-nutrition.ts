@@ -10,7 +10,7 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
-import { WeekDay } from "../generated/prisma/enums.js";
+import { WeekDay } from "../generated/prisma/index.js";
 import { auth } from "../lib/index.js";
 import { openai } from "@ai-sdk/openai";
 import { env } from "../lib/env.js";
@@ -235,6 +235,7 @@ Estes limites são baseados em diretrizes científicas da OMS e literatura médi
 - Ao atualizar, mande o plano completo com todos os dias e refeições — inclusive os que não mudaram.
 - Se o usuário quiser deletar um plano, confirme antes: "Tem certeza que quer deletar esta referência alimentar?" e só então chame \`deleteNutritionPlan\`.
 `;
+
 export const aiNutritionRoutes = async (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "POST",

@@ -6,12 +6,13 @@
   "author": "",
   "type": "module",
   "scripts": {
-    "dev": "tsx --watch src/index.ts ",
+    "dev": "tsx --watch src/index.ts",
     "build": "npx prisma generate && tsc",
     "start": "node dist/index.js",
-    "migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
     "migrate:dev": "prisma migrate dev",
-    "seed:exercises": "tsx prisma/seed-exercises.ts"
+    "migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
+    "seed:exercises": "tsx prisma/seed-exercises.ts",
+    "postinstall": "prisma generate"
   },
   "engines": {
     "node": "24.x"
@@ -26,12 +27,12 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^17.4.0",
     "prettier": "^3.8.1",
-    "prisma": "^7.4.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1"
   },
   "dependencies": {
+    "prisma": "^7.4.0",
     "@ai-sdk/google": "^3.0.34",
     "@ai-sdk/openai": "^3.0.33",
     "@fastify/cors": "^11.2.0",
