@@ -1,4 +1,4 @@
-import { WeekDay } from '@/generated/prisma/enums.js';
+import { WeekDay } from "../../generated/prisma/index.js";
 
 interface FoodInput {
   name: string

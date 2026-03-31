@@ -4,14 +4,10 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "es2024",
+    "skipLibCheck": true,
     "strict": true,
     "outDir": "./dist",
-    "rootDir": "./src",
-
-    "baseUrl": ".",
-    "paths": {
-      "@/generated/*": ["src/generated/*"]
-    }
+    "rootDir": "./src"
   },
   "include": ["src"]
 }

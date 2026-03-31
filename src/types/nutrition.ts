@@ -1,4 +1,4 @@
-import { WeekDay } from '@/generated/prisma/enums.js';
+import { WeekDay } from "../generated/prisma/index.js";
 
 export { WeekDay }
 
