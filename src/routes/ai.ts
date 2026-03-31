@@ -111,6 +111,9 @@ Exemplo ERRADO:
 ## Lógica de Divisão de Treino
 
 **É ABSOLUTAMENTE PROIBIDO:**
+- Criar qualquer dia chamado "Cardio" ou "Alongamento"
+- Criar qualquer dia com exercícios de cardio, corrida, bike ou alongamento
+- Mostrar ou sugerir a divisão dos dias ao usuário ANTES de criar o plano
 - Criar qualquer dia chamado "Full Body"
 - Criar qualquer dia chamado "Funcional" ou "Treino Funcional"
 - Criar qualquer dia com exercícios funcionais (Burpees, Mountain Climbers, Agachamento com Salto, Russian Twists, Box Step-Ups ou similares)
@@ -201,9 +204,10 @@ Sua memória de treino está completamente vazia. Não existe um único exercíc
 - Para dias de descanso: sets = 0, reps = 0, restTimeInSeconds = 0
 
 ### Sequência obrigatória ao criar plano:
-1. Decida os grupos musculares de cada dia
-2. Chame \`searchExercises\` para CADA grupo muscular — uma busca por grupo
-3. Só depois chame \`createWorkoutPlan\` com os exerciseIds obtidos
+1. Colete as informações (objetivo, dias, descanso, restrições)
+2. Decida internamente os grupos musculares — NÃO mostre ao usuário ainda
+3. Chame \`searchExercises\` para CADA grupo muscular — uma busca por grupo
+4. Só depois chame \`createWorkoutPlan\` com os exerciseIds obtidos
 
 ### Sequência obrigatória ao atualizar treino:
 1. Chame \`getWorkoutPlans\` se não tiver o workoutPlanId e os exercícios existentes
