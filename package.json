@@ -26,12 +26,12 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^17.4.0",
     "prettier": "^3.8.1",
-    "prisma": "^7.4.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1"
   },
   "dependencies": {
+    "prisma": "^7.4.0",
     "@ai-sdk/google": "^3.0.34",
     "@ai-sdk/openai": "^3.0.33",
     "@fastify/cors": "^11.2.0",

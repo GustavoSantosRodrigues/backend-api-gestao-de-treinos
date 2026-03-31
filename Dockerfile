@@ -17,7 +17,6 @@ COPY . .
 
 RUN npx prisma generate
 RUN npx tsc
-RUN cp -r src/generated ./dist/generated
 
 # Production
 FROM node:24-slim AS production
