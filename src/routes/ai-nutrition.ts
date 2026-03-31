@@ -10,7 +10,7 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
-import { WeekDay } from "../generated/prisma/enums.js";
+import { WeekDay } from "../generated/prisma/index.js";
 import { auth } from "../lib/index.js";
 import { openai } from "@ai-sdk/openai";
 import { env } from "../lib/env.js";
