@@ -1,6 +1,6 @@
 import z from "zod";
 
-import { WeekDay } from "../generated/prisma/enums.js";
+import { WeekDay } from "../generated/prisma/index.js";
 
 export const ErrorSchema = z.object({
   error: z.string(),
@@ -65,6 +65,7 @@ export const HomeDataSchema = z.object({
     }),
   ),
 });
+
 export const GetWorkoutDaySchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -83,6 +84,7 @@ export const GetWorkoutDaySchema = z.object({
       restTimeInSeconds: z.number(),
       weightSuggestion: z.string().optional(),
       notes: z.string().optional(),
+      gifUrl: z.string().optional(),
       logs: z.array(
         z.object({
           id: z.uuid(),
@@ -147,6 +149,9 @@ export const ListWorkoutPlansSchema = z.array(
             sets: z.number(),
             reps: z.number(),
             restTimeInSeconds: z.number(),
+            weightSuggestion: z.string().optional(),
+            notes: z.string().optional(),
+            exerciseId: z.uuid().optional(),
           }),
         ),
       }),

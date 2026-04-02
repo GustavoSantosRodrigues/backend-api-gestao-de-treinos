@@ -1,8 +1,7 @@
 import { NotFoundError } from "../errors/index.js";
-import { WeekDay } from "../generated/prisma/enums.js";
+import { WeekDay } from "../generated/prisma/index.js";
 import { prisma } from "../lib/db.js";
 
-// Data Transfer Object
 interface InputDto {
   userId: string;
   name: string;
@@ -20,6 +19,7 @@ interface InputDto {
       weightSuggestion?: string;
       notes?: string;
       restTimeInSeconds: number;
+      exerciseId?: string; // 👈 novo
     }>;
   }>;
 }
@@ -27,7 +27,7 @@ interface InputDto {
 interface OutputDto {
   id: string;
   name: string;
-  workoutPlanCreated:true;
+  workoutPlanCreated: true;
   workoutDays: Array<{
     name: string;
     weekDay: WeekDay;
@@ -40,6 +40,7 @@ interface OutputDto {
       sets: number;
       reps: number;
       restTimeInSeconds: number;
+      exerciseId?: string; // 👈 novo
     }>;
   }>;
 }
@@ -52,7 +53,19 @@ export class CreateWorkoutPlan {
         userId: dto.userId,
       },
     });
-    // Transaction - Atomicidade
+
+    const allExerciseIds = dto.workoutDays
+      .flatMap((day) => day.exercises)
+      .map((ex) => ex.exerciseId)
+      .filter((id): id is string => !!id);
+
+    const validExercises = await prisma.exercise.findMany({
+      where: { id: { in: allExerciseIds } },
+      select: { id: true },
+    });
+
+    const validIds = new Set(validExercises.map((e) => e.id));
+
     return prisma.$transaction(async (tx) => {
       if (existingWorkoutPlan) {
         await tx.workoutPlan.update({
@@ -60,6 +73,7 @@ export class CreateWorkoutPlan {
           data: { isActive: false },
         });
       }
+
       const workoutPlan = await tx.workoutPlan.create({
         data: {
           id: crypto.randomUUID(),
@@ -82,12 +96,17 @@ export class CreateWorkoutPlan {
                   weightSuggestion: exercise.weightSuggestion ?? undefined,
                   notes: exercise.notes ?? undefined,
                   restTimeInSeconds: exercise.restTimeInSeconds,
+                  exerciseId:
+                    exercise.exerciseId && validIds.has(exercise.exerciseId)
+                      ? exercise.exerciseId
+                      : null,
                 })),
               },
             })),
           },
         },
       });
+
       const result = await tx.workoutPlan.findUnique({
         where: { id: workoutPlan.id },
         include: {
@@ -98,9 +117,11 @@ export class CreateWorkoutPlan {
           },
         },
       });
+
       if (!result) {
         throw new NotFoundError("Workout plan not found");
       }
+
       return {
         id: result.id,
         name: result.name,
@@ -119,6 +140,7 @@ export class CreateWorkoutPlan {
             weightSuggestion: exercise.weightSuggestion ?? undefined,
             notes: exercise.notes ?? undefined,
             restTimeInSeconds: exercise.restTimeInSeconds,
+            exerciseId: exercise.exerciseId ?? undefined, // 👈 novo
           })),
         })),
       };

@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
@@ -53,7 +53,7 @@ model NutritionPlan {
 }
 
 model NutritionDay {
-  id              String       @id @default(uuid())
+  id              String        @id @default(uuid())
   nutritionPlanId String
   nutritionPlan   NutritionPlan @relation(fields: [nutritionPlanId], references: [id], onDelete: Cascade)
   weekDay         WeekDay?
@@ -139,6 +139,8 @@ model WorkoutExercise {
   workoutDayId      String
   workoutDay        WorkoutDay    @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
   sets              Int
+  exerciseId        String?
+ exercise    Exercise?  @relation(fields: [exerciseId], references: [id], onDelete: SetNull)
   reps              Int
   weightSuggestion  String?
   notes             String?
@@ -146,6 +148,16 @@ model WorkoutExercise {
   logs              ExerciseLog[]
   createdAt         DateTime      @default(now()) @db.Timestamptz()
   updatedAt         DateTime      @updatedAt @db.Timestamptz()
+}
+
+model Exercise {
+  id         String   @id
+  name       String
+  muscles    String[]
+  gifUrl     String
+  createdAt  DateTime @default(now()) @db.Timestamptz()
+
+  workoutExercises WorkoutExercise[]
 }
 
 model WorkoutSession {

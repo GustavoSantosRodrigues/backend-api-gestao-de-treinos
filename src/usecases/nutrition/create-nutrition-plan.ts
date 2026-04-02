@@ -1,4 +1,4 @@
-import { WeekDay } from "../../generated/prisma/enums.js";
+import { WeekDay } from "../../generated/prisma/index.js";
 import { prisma } from "../../lib/db.js";
 import { validateNutritionDays } from "./validate-nutrition-days.js";
 import { calculatePlanAverages } from "./calculate-plan-averages.js";

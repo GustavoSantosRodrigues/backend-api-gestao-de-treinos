@@ -1,5 +1,5 @@
 import { NotFoundError } from "../errors/index.js";
-import { WeekDay } from "../generated/prisma/enums.js";
+import { WeekDay } from "../generated/prisma/index.js";
 import { prisma } from "../lib/db.js";
 
 interface ExerciseDto {
@@ -10,6 +10,7 @@ interface ExerciseDto {
   weightSuggestion?: string;
   notes?: string;
   restTimeInSeconds: number;
+  exerciseId?: string; // 👈 novo
 }
 
 interface WorkoutDayDto {
@@ -54,7 +55,6 @@ export class UpdateWorkoutPlan {
     }
 
     return prisma.$transaction(async (tx) => {
-      // Atualiza nome do plano se fornecido
       if (dto.name) {
         await tx.workoutPlan.update({
           where: { id: workoutPlan.id },
@@ -62,16 +62,14 @@ export class UpdateWorkoutPlan {
         });
       }
 
-      // Atualiza apenas os dias fornecidos
       if (dto.workoutDays && dto.workoutDays.length > 0) {
         for (const dayDto of dto.workoutDays) {
           const existingDay = workoutPlan.workoutDays.find(
-            (d) => d.weekDay === dayDto.weekDay
+            (d) => d.weekDay === dayDto.weekDay,
           );
 
           if (!existingDay) continue;
 
-          // Atualiza dados do dia
           await tx.workoutDay.update({
             where: { id: existingDay.id },
             data: {
@@ -80,15 +78,27 @@ export class UpdateWorkoutPlan {
               ...(dayDto.estimatedDurationInSeconds !== undefined && {
                 estimatedDurationInSeconds: dayDto.estimatedDurationInSeconds,
               }),
-              ...(dayDto.coverImageUrl && { coverImageUrl: dayDto.coverImageUrl }),
+              ...(dayDto.coverImageUrl && {
+                coverImageUrl: dayDto.coverImageUrl,
+              }),
             },
           });
 
-          // Se vieram exercícios, recria os exercícios do dia
           if (dayDto.exercises !== undefined) {
             await tx.workoutExercise.deleteMany({
               where: { workoutDayId: existingDay.id },
             });
+
+            const allExerciseIds = (dto.workoutDays ?? [])
+              .flatMap((day) => day.exercises ?? [])
+              .map((ex) => ex.exerciseId)
+              .filter((id): id is string => !!id);
+
+            const validExercises = await prisma.exercise.findMany({
+              where: { id: { in: allExerciseIds } },
+              select: { id: true },
+            });
+            const validIds = new Set(validExercises.map((e) => e.id));
 
             if (dayDto.exercises.length > 0) {
               await tx.workoutExercise.createMany({
@@ -102,6 +112,10 @@ export class UpdateWorkoutPlan {
                   restTimeInSeconds: ex.restTimeInSeconds,
                   weightSuggestion: ex.weightSuggestion ?? null,
                   notes: ex.notes ?? null,
+                  exerciseId:
+                    ex.exerciseId && validIds.has(ex.exerciseId)
+                      ? ex.exerciseId
+                      : null,
                 })),
               });
             }

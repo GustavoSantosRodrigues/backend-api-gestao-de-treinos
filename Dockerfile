@@ -1,9 +1,12 @@
-FROM node:24-slim AS base
+FROM node:24-bookworm-slim AS base
 
 WORKDIR /app
 
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
+COPY prisma.config.ts ./
 
 # Install dependencies
 FROM base AS deps
@@ -15,15 +18,20 @@ FROM deps AS build
 
 COPY . .
 
-RUN npm run build && cp -r src/generated ./dist/generated
+RUN npx prisma generate
+RUN npx tsc
+RUN npx copyfiles -u 1 "src/generated/**/*" dist
 
 # Production
-FROM node:24-slim AS production
+FROM node:24-bookworm-slim AS production
 
 WORKDIR /app
 
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
+COPY prisma.config.ts ./
 
 RUN npm ci --omit=dev
 
