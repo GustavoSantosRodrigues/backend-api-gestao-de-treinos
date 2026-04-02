@@ -78,7 +78,9 @@ export class UpdateWorkoutPlan {
               ...(dayDto.estimatedDurationInSeconds !== undefined && {
                 estimatedDurationInSeconds: dayDto.estimatedDurationInSeconds,
               }),
-              ...(dayDto.coverImageUrl && { coverImageUrl: dayDto.coverImageUrl }),
+              ...(dayDto.coverImageUrl && {
+                coverImageUrl: dayDto.coverImageUrl,
+              }),
             },
           });
 
@@ -86,6 +88,17 @@ export class UpdateWorkoutPlan {
             await tx.workoutExercise.deleteMany({
               where: { workoutDayId: existingDay.id },
             });
+
+            const allExerciseIds = (dto.workoutDays ?? [])
+              .flatMap((day) => day.exercises ?? [])
+              .map((ex) => ex.exerciseId)
+              .filter((id): id is string => !!id);
+
+            const validExercises = await prisma.exercise.findMany({
+              where: { id: { in: allExerciseIds } },
+              select: { id: true },
+            });
+            const validIds = new Set(validExercises.map((e) => e.id));
 
             if (dayDto.exercises.length > 0) {
               await tx.workoutExercise.createMany({
@@ -99,7 +112,10 @@ export class UpdateWorkoutPlan {
                   restTimeInSeconds: ex.restTimeInSeconds,
                   weightSuggestion: ex.weightSuggestion ?? null,
                   notes: ex.notes ?? null,
-                  exerciseId: ex.exerciseId ?? null, // 👈 novo
+                  exerciseId:
+                    ex.exerciseId && validIds.has(ex.exerciseId)
+                      ? ex.exerciseId
+                      : null,
                 })),
               });
             }

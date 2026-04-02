@@ -54,6 +54,18 @@ export class CreateWorkoutPlan {
       },
     });
 
+    const allExerciseIds = dto.workoutDays
+      .flatMap((day) => day.exercises)
+      .map((ex) => ex.exerciseId)
+      .filter((id): id is string => !!id);
+
+    const validExercises = await prisma.exercise.findMany({
+      where: { id: { in: allExerciseIds } },
+      select: { id: true },
+    });
+
+    const validIds = new Set(validExercises.map((e) => e.id));
+
     return prisma.$transaction(async (tx) => {
       if (existingWorkoutPlan) {
         await tx.workoutPlan.update({
@@ -84,7 +96,10 @@ export class CreateWorkoutPlan {
                   weightSuggestion: exercise.weightSuggestion ?? undefined,
                   notes: exercise.notes ?? undefined,
                   restTimeInSeconds: exercise.restTimeInSeconds,
-                  exerciseId: exercise.exerciseId ?? null, // 👈 novo
+                  exerciseId:
+                    exercise.exerciseId && validIds.has(exercise.exerciseId)
+                      ? exercise.exerciseId
+                      : null,
                 })),
               },
             })),

@@ -209,6 +209,12 @@ Sua memória de treino está completamente vazia. Não existe um único exercíc
 3. Chame \`searchExercises\` para CADA grupo muscular — uma busca por grupo
 4. Só depois chame \`createWorkoutPlan\` com os exerciseIds obtidos
 
+⚠️ CRÍTICO — exerciseId:
+- O \`exerciseId\` deve ser EXATAMENTE o campo \`id\` retornado pela \`searchExercises\`
+- NUNCA modifique, abrevie ou invente um \`exerciseId\`
+- Se não encontrar o exercício desejado na lista → use outro exercício da lista
+- NUNCA use um \`exerciseId\` que não veio da resposta da \`searchExercises\` nessa conversa
+
 ### Sequência obrigatória ao atualizar treino:
 1. Chame \`getWorkoutPlans\` se não tiver o workoutPlanId e os exercícios existentes
 2. Chame \`searchExercises\` para o(s) grupo(s) muscular(es) envolvidos
@@ -403,7 +409,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
       });
 
       const result = streamText({
-        model: openai("gpt-4o-mini"),
+        model: openai("gpt-4o"),
         system: SYSTEM_PROMPT,
         messages: await convertToModelMessages(messages as UIMessage[]),
         stopWhen: stepCountIs(70),
