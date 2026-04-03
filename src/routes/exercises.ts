@@ -39,7 +39,7 @@ export async function exercisesRoutes(app: FastifyInstance) {
           }),
         },
         orderBy: { name: "asc" },
-        take: 15,
+        // take: 15,
         select: { id: true, name: true, muscles: true, gifUrl: true },
       });
 

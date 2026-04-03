@@ -30,7 +30,65 @@ import { LogExerciseSet } from "../usecases/LogExerciseSet.js";
 import { GetExerciseLogs } from "../usecases/GetExerciseLogs.js";
 import { ReorderExercises } from "../usecases/ReorderExercises.js";
 
+import { UpdateWorkoutPlan } from "../usecases/UpdateWorkoutPlan.js";
+import { UpdateWorkoutPlanBodySchema } from "../schemas/index.js";
+
 export const workoutPlanRoutes = async (app: FastifyInstance) => {
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/:workoutPlanId",
+    schema: {
+      tags: ["Workout Plan"],
+      operationId: "updateWorkoutPlan",
+      summary: "Update a workout plan",
+      params: z.object({ workoutPlanId: z.uuid() }),
+      body: UpdateWorkoutPlanBodySchema,
+      response: {
+        200: z.object({
+          id: z.string(),
+          name: z.string(),
+          workoutPlanUpdated: z.literal(true),
+        }),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+        const updateWorkoutPlan = new UpdateWorkoutPlan();
+        const result = await updateWorkoutPlan.execute({
+          userId: session.user.id,
+          workoutPlanId: request.params.workoutPlanId,
+          name: request.body.name,
+          workoutDays: request.body.workoutDays,
+        });
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        if (error instanceof NotFoundError) {
+          return reply
+            .status(404)
+            .send({ error: error.message, code: "NOT_FOUND_ERROR" });
+        }
+        return reply
+          .status(500)
+          .send({
+            error: "Internal server error",
+            code: "INTERNAL_SERVER_ERROR",
+          });
+      }
+    },
+  });
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/",

@@ -40,6 +40,32 @@ export const StatsSchema = z.object({
   totalTimeInSeconds: z.number(),
 });
 
+
+export const UpdateWorkoutPlanBodySchema = z.object({
+  name: z.string().trim().min(1).optional(),
+  workoutDays: z.array(
+    z.object({
+      weekDay: z.enum(WeekDay),
+      name: z.string().optional(),
+      isRest: z.boolean().optional(),
+      estimatedDurationInSeconds: z.number().optional(),
+      coverImageUrl: z.url().optional(),
+      exercises: z.array(
+        z.object({
+          order: z.number().min(0),
+          name: z.string().trim().min(1),
+          sets: z.number().min(1),
+          reps: z.number().min(1),
+          restTimeInSeconds: z.number().min(1),
+          weightSuggestion: z.string().optional(),
+          notes: z.string().optional(),
+          exerciseId: z.string().optional(),
+        }),
+      ).optional(),
+    }),
+  ).optional(),
+});
+
 export const HomeDataSchema = z.object({
   activeWorkoutPlanId: z.uuid().optional(),
   todayWorkoutDay: z
