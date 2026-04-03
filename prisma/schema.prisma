@@ -29,9 +29,28 @@ model User {
   age                 Int?
   bodyFatPercentage   Int?
   nutritionPlans      NutritionPlan[]
+  isTrainer           Boolean         @default(false) 
+  trainerStudents     TrainerStudent[] @relation("TrainerRelation") 
+  studentTrainers     TrainerStudent[] @relation("StudentRelation") 
+   role      String   @default("user")
+  banned    Boolean  @default(false)  
+  banReason String?                   
+  banExpires DateTime?        @default(now())          
 
   @@unique([email])
   @@map("user")
+}
+
+model TrainerStudent {
+  id        String   @id @default(uuid())
+  trainerId String
+  studentId String
+  trainer   User     @relation("TrainerRelation", fields: [trainerId], references: [id])
+  student   User     @relation("StudentRelation", fields: [studentId], references: [id])
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+
+  @@unique([trainerId, studentId])
 }
 
 model NutritionPlan {

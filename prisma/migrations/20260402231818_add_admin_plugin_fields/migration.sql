@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "user" ADD COLUMN     "banExpires" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "banReason" TEXT,
+ADD COLUMN     "banned" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "role" TEXT NOT NULL DEFAULT 'user';

@@ -166,14 +166,22 @@ export const UpsertUserTrainDataBodySchema = z.object({
   bodyFatPercentage: z.number().min(0).max(100),
 });
 
-export const UserTrainDataSchema = z.object({
-  userId: z.string(),
-  userName: z.string(),
-  weightInGrams: z.number(),
-  heightInCentimeters: z.number(),
-  age: z.number(),
-  bodyFatPercentage: z.number().min(0).max(100),
-});
+export const UserTrainDataSchema = z.union([
+  z.object({
+    userId: z.string(),
+    userName: z.string(),
+    weightInGrams: z.number(),
+    heightInCentimeters: z.number(),
+    age: z.number(),
+    bodyFatPercentage: z.number().min(0).max(100),
+    isTrainer: z.boolean(),
+    incomplete: z.literal(false).optional(),
+  }),
+  z.object({
+    isTrainer: z.boolean(),
+    incomplete: z.literal(true),
+  }),
+]);
 
 export const UpsertUserTrainDataSchema = z.object({
   userId: z.string(),

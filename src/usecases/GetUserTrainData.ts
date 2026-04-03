@@ -11,10 +11,17 @@ interface OutputDto {
   heightInCentimeters: number;
   age: number;
   bodyFatPercentage: number;
+  isTrainer: boolean;
+  incomplete?: boolean;
+}
+
+interface IncompleteOutputDto {
+  isTrainer: boolean;
+  incomplete: true;
 }
 
 export class GetUserTrainData {
-  async execute(dto: InputDto): Promise<OutputDto | null> {
+  async execute(dto: InputDto): Promise<OutputDto | IncompleteOutputDto | null> {
     const user = await prisma.user.findUnique({
       where: { id: dto.userId },
     });
@@ -29,16 +36,18 @@ export class GetUserTrainData {
       user.age === null ||
       user.bodyFatPercentage === null
     ) {
-      return null;
+      return { isTrainer: user.isTrainer, incomplete: true };
     }
 
     return {
       userId: user.id,
       userName: user.name,
+      isTrainer: user.isTrainer,
       weightInGrams: user.weightInGrams,
       heightInCentimeters: user.heightInCentimeters,
       age: user.age,
       bodyFatPercentage: user.bodyFatPercentage,
+      
     };
   }
 }

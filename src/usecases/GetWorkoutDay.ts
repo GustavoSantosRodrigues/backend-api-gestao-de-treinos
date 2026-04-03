@@ -52,8 +52,23 @@ export class GetWorkoutDay {
       where: { id: dto.workoutPlanId },
     });
 
-    if (!workoutPlan || workoutPlan.userId !== dto.userId) {
+    if (!workoutPlan) {
       throw new NotFoundError("Workout plan not found");
+    }
+
+    if (workoutPlan.userId !== dto.userId) {
+      const trainerLink = await prisma.trainerStudent.findUnique({
+        where: {
+          trainerId_studentId: {
+            trainerId: dto.userId,
+            studentId: workoutPlan.userId,
+          },
+        },
+      });
+
+      if (!trainerLink || trainerLink.status !== "ACTIVE") {
+        throw new NotFoundError("Workout plan not found");
+      }
     }
 
     const workoutDay = await prisma.workoutDay.findUnique({
