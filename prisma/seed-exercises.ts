@@ -17,6 +17,12 @@ const exercises: ExerciseSeed[] = [
     gifUrl: "/gif-exercise/biceps/rosca-direta-barra.gif",
   },
   {
+    id: "rosca-corda-polia",
+    name: "Rosca com Corda na Polia",
+    muscles: ["biceps"],
+    gifUrl: "/gif-exercise/biceps/rosca-biceps-no-cabo.gif",
+  },
+  {
     id: "rosca-alternada-halter",
     name: "Rosca Alternada com Halter",
     muscles: ["biceps"],
@@ -80,7 +86,7 @@ const exercises: ExerciseSeed[] = [
     id: "rosca-martelo-halter-unilateral",
     name: "Rosca Martelo com Halter Unilateral",
     muscles: ["biceps", "antebraco"],
-    gifUrl: "/gif-exercise/biceps/biceps-martelo-halter-unilateral.webp",
+    gifUrl: "/gif-exercise/biceps/rosca-martelo-halter-unilateral.webp",
   },
   {
     id: "rosca-inclinada-halter",
@@ -110,7 +116,7 @@ const exercises: ExerciseSeed[] = [
     id: "rosca-banco-scott-halter",
     name: "Rosca Scott com Halter",
     muscles: ["biceps"],
-    gifUrl: "/gif-exercise/biceps/biceps-banco-scott-halter.gif",
+    gifUrl: "/gif-exercise/biceps/rosca-banco-scott-halter.gif",
   },
 
   // ─── PEITO — SUPINO ───────────────────────────────────────
@@ -210,7 +216,7 @@ const exercises: ExerciseSeed[] = [
     id: "crossover-cabo-alto",
     name: "Crossover Cabo Alto",
     muscles: ["peito"],
-    gifUrl: "/gif-exercise/peito/crossover-cabo-alto.gif",
+    gifUrl: "/gif-exercise/peito/crucifixo-crossover-alto.gif",
   },
   {
     id: "crucifixo-no-crossover",
@@ -543,10 +549,10 @@ const exercises: ExerciseSeed[] = [
     gifUrl: "/gif-exercise/costas/remada-maquina-inclinada.gif",
   },
   {
-    id: "remada-articulada",
-    name: "Remada articulada",
+    id: "remada-maquina-articulada",
+    name: "Remada na máquina articulada",
     muscles: ["costas"],
-    gifUrl: "/gif-exercise/costas/remada-articulada.gif",
+    gifUrl: "/gif-exercise/costas/remada-maquina-articulada.gif",
   },
   {
     id: "remada-articulada-maquina-com-apoio-no-peito",
@@ -747,7 +753,7 @@ const exercises: ExerciseSeed[] = [
     id: "flexao-nórdica",
     name: "Flexão Nórdica",
     muscles: ["isquiotibiais"],
-    gifUrl: "/gif-exercise/perna/flexao-nordica.gif",
+    gifUrl: "/gif-exercise/perna/flexao-nórdica.gif",
   },
   {
     id: "mesa-flexora",
@@ -779,7 +785,7 @@ const exercises: ExerciseSeed[] = [
     id: "4-apoios-gluteo-elastico",
     name: "4 Apoios com Glúteo Elástico",
     muscles: ["gluteo"],
-    gifUrl: "/gif-exercise/perna/gluteo-4-apoios.gif",
+    gifUrl: "/gif-exercise/perna/4-apoios-gluteo-elastico.gif",
   },
   {
     id: "elevacao-pelvica-halter",
@@ -836,10 +842,10 @@ const exercises: ExerciseSeed[] = [
 
   // ─── ABDÔMEN — CRUNCH / FLEXÃO ────────────────────────────
   {
-    id: "crunch-inclinado",
-    name: "Crunch no Banco Inclinado",
+    id: "crunch-no-cabo",
+    name: "Crunch no cabo",
     muscles: ["abdomen"],
-    gifUrl: "/gif-exercise/abdomen/crunch-inclinado.gif",
+    gifUrl: "/gif-exercise/abdomen/crunch-cabo.gif",
   },
   {
     id: "crunch-bicicleta",
@@ -898,7 +904,7 @@ const exercises: ExerciseSeed[] = [
     id: "abdominal-tesoura",
     name: "Abdominal tesoura",
     muscles: ["abdomen", "core"],
-    gifUrl: "",
+    gifUrl: "/gif-exercise/abdomen/abdominal-tesoura.gif",
   },
   {
     id: "abdominal-remador",

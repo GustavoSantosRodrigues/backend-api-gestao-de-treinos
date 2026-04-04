@@ -30,7 +30,7 @@ model User {
   bodyFatPercentage   Int?
   nutritionPlans      NutritionPlan[]
   isTrainer           Boolean         @default(false) 
-  trainerStudents     TrainerStudent[] @relation("TrainerRelation") 
+  trainerStudents     TrainerStudent[] @relation("TrainerRelation")  
   studentTrainers     TrainerStudent[] @relation("StudentRelation") 
    role      String   @default("user")
   banned    Boolean  @default(false)  
@@ -45,8 +45,8 @@ model TrainerStudent {
   id        String   @id @default(uuid())
   trainerId String
   studentId String
-  trainer   User     @relation("TrainerRelation", fields: [trainerId], references: [id])
-  student   User     @relation("StudentRelation", fields: [studentId], references: [id])
+  trainer   User     @relation("TrainerRelation", fields: [trainerId], references: [id], onDelete: Cascade)
+  student   User     @relation("StudentRelation", fields: [studentId], references: [id], onDelete: Cascade)
   status    String   @default("PENDING")
   createdAt DateTime @default(now())
 
