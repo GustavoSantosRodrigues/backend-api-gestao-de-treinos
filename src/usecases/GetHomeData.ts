@@ -54,7 +54,11 @@ export class GetHomeData {
       include: {
         workoutDays: {
           include: {
-            exercises: true,
+            exercises: {
+              orderBy: {
+                order: "asc",
+              },
+            },
             sessions: true,
           },
         },

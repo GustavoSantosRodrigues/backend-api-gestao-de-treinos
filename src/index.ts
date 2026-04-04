@@ -23,6 +23,7 @@ import fastifyRateLimit from "@fastify/rate-limit";
 import { nutritionRoutes } from "./routes/nutrition.js";
 import { aiNutritionRoutes } from "./routes/ai-nutrition.js";
 import { exercisesRoutes } from "./routes/exercises.js";
+import { trainerRoutes } from "./routes/trainer.js";
 
 
 const envToLogger = {
@@ -77,32 +78,32 @@ await app.register(fastifyRateLimit, {
   global: false,
 });
 
-app.addHook("onRequest", async (request, reply) => {
-  if (
-    !request.url.startsWith("/docs") &&
-    !request.url.startsWith("/swagger.json")
-  ) {
-    return;
-  }
+// app.addHook("onRequest", async (request, reply) => {
+//   if (
+//     !request.url.startsWith("/docs") &&
+//     !request.url.startsWith("/swagger.json")
+//   ) {
+//     return;
+//   }
 
-  const authHeader = request.headers["authorization"];
+//   const authHeader = request.headers["authorization"];
 
-  if (!authHeader || !authHeader.startsWith("Basic ")) {
-    reply.header("WWW-Authenticate", 'Basic realm="API Docs"');
-    reply.status(401).send({ error: "Unauthorized" });
-    return;
-  }
+//   if (!authHeader || !authHeader.startsWith("Basic ")) {
+//     reply.header("WWW-Authenticate", 'Basic realm="API Docs"');
+//     reply.status(401).send({ error: "Unauthorized" });
+//     return;
+//   }
 
-  const base64 = authHeader.split(" ")[1];
-  const decoded = Buffer.from(base64, "base64").toString("utf-8");
-  const [username, password] = decoded.split(":");
+//   const base64 = authHeader.split(" ")[1];
+//   const decoded = Buffer.from(base64, "base64").toString("utf-8");
+//   const [username, password] = decoded.split(":");
 
-  if (username !== env.DOCS_USERNAME || password !== env.DOCS_PASSWORD) {
-    reply.header("WWW-Authenticate", 'Basic realm="API Docs"');
-    reply.status(401).send({ error: "Unauthorized" });
-    return;
-  }
-});
+//   if (username !== env.DOCS_USERNAME || password !== env.DOCS_PASSWORD) {
+//     reply.header("WWW-Authenticate", 'Basic realm="API Docs"');
+//     reply.status(401).send({ error: "Unauthorized" });
+//     return;
+//   }
+// });
 
 await app.register(fastifyApiReference, {
   routePrefix: "/docs",
@@ -132,6 +133,7 @@ await app.register(aiRoutes, { prefix: "/ai" });
 await app.register(aiNutritionRoutes);
 await app.register(nutritionRoutes);
 await app.register(exercisesRoutes);
+await app.register(trainerRoutes, { prefix: "/trainer" });
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",

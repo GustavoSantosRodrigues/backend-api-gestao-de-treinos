@@ -413,8 +413,8 @@ export const aiRoutes = async (app: FastifyInstance) => {
         system: SYSTEM_PROMPT,
         messages: await convertToModelMessages(messages as UIMessage[]),
         stopWhen: stepCountIs(70),
+        maxOutputTokens: 2000,
         tools: {
-          // ─── 👇 NOVA TOOL ──────────────────────────────────────────────
           searchExercises: tool({
             description:
               "CHAME ESTA TOOL SEMPRE antes de criar ou atualizar qualquer plano. " +
@@ -435,7 +435,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
             }),
             execute: async ({ muscles }) => {
               console.log("🔍 searchExercises called:", {
-                muscles,   
+                muscles,
               });
 
               const exercises = await prisma.exercise.findMany({
@@ -543,22 +543,25 @@ export const aiRoutes = async (app: FastifyInstance) => {
                   "Array com exatamente 7 dias de treino (MONDAY a SUNDAY)",
                 ),
             }),
-           execute: async (input) => {
-  console.log("📝 createWorkoutPlan INPUT:", JSON.stringify(input, null, 2));
-  const createWorkoutPlan = new CreateWorkoutPlan();
-  try {
-    const result = await createWorkoutPlan.execute({
-      userId,
-      name: input.name,
-      workoutDays: input.workoutDays,
-    });
-    console.log("✅ createWorkoutPlan SUCCESS:", result.id);
-    return result;
-  } catch (error) {
-    console.error("❌ createWorkoutPlan ERROR:", error);
-    throw error;
-  }
-},
+            execute: async (input) => {
+              console.log(
+                "📝 createWorkoutPlan INPUT:",
+                JSON.stringify(input, null, 2),
+              );
+              const createWorkoutPlan = new CreateWorkoutPlan();
+              try {
+                const result = await createWorkoutPlan.execute({
+                  userId,
+                  name: input.name,
+                  workoutDays: input.workoutDays,
+                });
+                console.log("✅ createWorkoutPlan SUCCESS:", result.id);
+                return result;
+              } catch (error) {
+                console.error("❌ createWorkoutPlan ERROR:", error);
+                throw error;
+              }
+            },
           }),
 
           deleteWorkoutPlan: tool({

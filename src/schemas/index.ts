@@ -40,6 +40,32 @@ export const StatsSchema = z.object({
   totalTimeInSeconds: z.number(),
 });
 
+
+export const UpdateWorkoutPlanBodySchema = z.object({
+  name: z.string().trim().min(1).optional(),
+  workoutDays: z.array(
+    z.object({
+      weekDay: z.enum(WeekDay),
+      name: z.string().optional(),
+      isRest: z.boolean().optional(),
+      estimatedDurationInSeconds: z.number().optional(),
+      coverImageUrl: z.url().optional(),
+      exercises: z.array(
+        z.object({
+          order: z.number().min(0),
+          name: z.string().trim().min(1),
+          sets: z.number().min(1),
+          reps: z.number().min(1),
+          restTimeInSeconds: z.number().min(1),
+          weightSuggestion: z.string().optional(),
+          notes: z.string().optional(),
+          exerciseId: z.string().optional(),
+        }),
+      ).optional(),
+    }),
+  ).optional(),
+});
+
 export const HomeDataSchema = z.object({
   activeWorkoutPlanId: z.uuid().optional(),
   todayWorkoutDay: z
@@ -85,6 +111,7 @@ export const GetWorkoutDaySchema = z.object({
       weightSuggestion: z.string().optional(),
       notes: z.string().optional(),
       gifUrl: z.string().optional(),
+      exerciseId: z.string().optional(),
       logs: z.array(
         z.object({
           id: z.uuid(),
@@ -166,14 +193,22 @@ export const UpsertUserTrainDataBodySchema = z.object({
   bodyFatPercentage: z.number().min(0).max(100),
 });
 
-export const UserTrainDataSchema = z.object({
-  userId: z.string(),
-  userName: z.string(),
-  weightInGrams: z.number(),
-  heightInCentimeters: z.number(),
-  age: z.number(),
-  bodyFatPercentage: z.number().min(0).max(100),
-});
+export const UserTrainDataSchema = z.union([
+  z.object({
+    userId: z.string(),
+    userName: z.string(),
+    weightInGrams: z.number(),
+    heightInCentimeters: z.number(),
+    age: z.number(),
+    bodyFatPercentage: z.number().min(0).max(100),
+    isTrainer: z.boolean(),
+    incomplete: z.literal(false).optional(),
+  }),
+  z.object({
+    isTrainer: z.boolean(),
+    incomplete: z.literal(true),
+  }),
+]);
 
 export const UpsertUserTrainDataSchema = z.object({
   userId: z.string(),

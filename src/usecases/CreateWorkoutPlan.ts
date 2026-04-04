@@ -112,7 +112,11 @@ export class CreateWorkoutPlan {
         include: {
           workoutDays: {
             include: {
-              exercises: true,
+              exercises: {
+                orderBy: {
+                  order: "asc",
+                },
+              },
             },
           },
         },
