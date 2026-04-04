@@ -111,6 +111,7 @@ export const GetWorkoutDaySchema = z.object({
       weightSuggestion: z.string().optional(),
       notes: z.string().optional(),
       gifUrl: z.string().optional(),
+      exerciseId: z.string().optional(),
       logs: z.array(
         z.object({
           id: z.uuid(),

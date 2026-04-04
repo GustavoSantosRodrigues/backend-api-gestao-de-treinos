@@ -31,6 +31,7 @@ interface OutputDto {
     weightSuggestion?: string;
     notes?: string;
     gifUrl?: string;
+    exerciseId?: string;
     logs: Array<{
       id: string;
       setNumber: number;
@@ -109,6 +110,7 @@ export class GetWorkoutDay {
         weightSuggestion: exercise.weightSuggestion ?? undefined,
         notes: exercise.notes ?? undefined,
         gifUrl: exercise.exercise?.gifUrl ?? undefined,
+        exerciseId: exercise.exerciseId ?? undefined,
         logs: exercise.logs.map((log) => ({
           id: log.id,
           setNumber: log.setNumber,
