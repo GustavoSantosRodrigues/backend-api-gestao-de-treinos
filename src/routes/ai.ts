@@ -305,8 +305,8 @@ Título + exercícios + imagem devem SEMPRE estar alinhados.
 
 ## Mapeamento de Imagens (OBRIGATÓRIO)
 
-REGRA: coverImageUrl é OBRIGATÓRIO em TODOS os dias — treino E descanso.
-NUNCA enviar coverImageUrl vazio ou omitir o campo.
+REGRA: coverImageUrl é OBRIGATÓRIO apenas em dias de TREINO.
+Dias de DESCANSO: NUNCA enviar coverImageUrl — omita o campo completamente.
 
 Peito / Tríceps / Push:
 - https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOW3fJmqZe4yoUcwvRPQa8kmFprzNiC30hqftL
@@ -318,7 +318,7 @@ Pernas / Glúteos / Lower:
 - https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOgCHaUgNGronCvXmSzAMs1N3KgLdE5yHT6Ykj
 - https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO85RVu3morROwZk5NPhs1jzH7X8TyEvLUCGxY
 
-Ombros / Braços / Full Body / Descanso:
+Ombros / Braços:
 - https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO3y8pQ6GBg8iqe9pP2JrHjwd1nfKtVSQskI0v
 
 A imagem DEVE corresponder ao grupo muscular principal do dia.
@@ -413,7 +413,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
         system: SYSTEM_PROMPT,
         messages: await convertToModelMessages(messages as UIMessage[]),
         stopWhen: stepCountIs(70),
-        maxOutputTokens: 2000,
+        maxOutputTokens: 4000,
         tools: {
           searchExercises: tool({
             description:
