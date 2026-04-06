@@ -305,23 +305,23 @@ Título + exercícios + imagem devem SEMPRE estar alinhados.
 
 ## Mapeamento de Imagens (OBRIGATÓRIO)
 
-REGRA: coverImageUrl é OBRIGATÓRIO apenas em dias de TREINO.
-⚠️ DIAS DE DESCANSO (isRest: true): NÃO enviar coverImageUrl. O campo deve ser completamente omitido do objeto — não enviar null, não enviar string vazia, simplesmente não incluir o campo.
+⚠️ REGRA ABSOLUTA — SEM EXCEÇÃO:
+- Dias de TREINO (isRest: false): coverImageUrl é OBRIGATÓRIO — SEMPRE enviar uma das URLs abaixo
+- Dias de DESCANSO (isRest: true): NUNCA enviar coverImageUrl — omitir o campo completamente
+
+Use EXATAMENTE a URL correspondente ao grupo muscular principal do dia:
 
 Peito / Tríceps / Push:
-- https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOW3fJmqZe4yoUcwvRPQa8kmFprzNiC30hqftL
+→ https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOW3fJmqZe4yoUcwvRPQa8kmFprzNiC30hqftL
 
-Costas / Bíceps / Pull / Upper / Braços / Abdômen:
-- https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO3y8pQ6GBg8iqe9pP2JrHjwd1nfKtVSQskI0v
+Costas / Bíceps / Pull / Upper / Ombros / Braços / Abdômen:
+→ https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO3y8pQ6GBg8iqe9pP2JrHjwd1nfKtVSQskI0v
 
 Pernas / Glúteos / Lower:
-- https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOgCHaUgNGronCvXmSzAMs1N3KgLdE5yHT6Ykj'
-- https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO85RVu3morROwZk5NPhs1jzH7X8TyEvLUCGxY
+→ https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO85RVu3morROwZk5NPhs1jzH7X8TyEvLUCGxY
 
-Ombros / Braços:
-- https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO3y8pQ6GBg8iqe9pP2JrHjwd1nfKtVSQskI0v
-
-A imagem DEVE corresponder ao grupo muscular principal do dia.
+Se o dia não se encaixar em nenhuma categoria → use a URL de Costas/Bíceps como padrão.
+NUNCA deixe coverImageUrl vazio ou ausente em dias de treino — é obrigatório.
 `;
 
 export const aiRoutes = async (app: FastifyInstance) => {
@@ -532,7 +532,12 @@ export const aiRoutes = async (app: FastifyInstance) => {
                       .string()
                       .url()
                       .optional()
-                      .describe("URL da imagem de capa do dia de treino. Obrigatório apenas em dias de treino (isRest: false). Omitir completamente em dias de descanso."),
+                      .describe(
+                        "URL da imagem de capa. " +
+                        "OBRIGATÓRIO em dias de treino (isRest: false) — use SEMPRE uma das URLs do mapeamento do system prompt. " +
+                        "NUNCA omitir em dias de treino. " +
+                        "NUNCA enviar em dias de descanso (isRest: true).",
+                      ),
                     exercises: z
                       .array(exerciseSchema)
                       .describe(
