@@ -88,6 +88,8 @@ export class UpdateWorkoutPlan {
 
           if (!existingDay) continue;
 
+          const isRest = dayDto.isRest ?? existingDay.isRest;
+
           await tx.workoutDay.update({
             where: { id: existingDay.id },
             data: {
@@ -96,13 +98,16 @@ export class UpdateWorkoutPlan {
               ...(dayDto.estimatedDurationInSeconds !== undefined && {
                 estimatedDurationInSeconds: dayDto.estimatedDurationInSeconds,
               }),
-              ...(dayDto.coverImageUrl && {
+              ...(!isRest && dayDto.coverImageUrl && {
                 coverImageUrl: dayDto.coverImageUrl,
               }),
+              ...(isRest && { coverImageUrl: null }),
             },
           });
 
-          if (dayDto.exercises !== undefined) {
+          const sanitizedExercises = isRest ? [] : dayDto.exercises;
+
+          if (sanitizedExercises !== undefined) {
             await tx.workoutExercise.deleteMany({
               where: { workoutDayId: existingDay.id },
             });
@@ -118,9 +123,9 @@ export class UpdateWorkoutPlan {
             });
             const validIds = new Set(validExercises.map((e) => e.id));
 
-            if (dayDto.exercises.length > 0) {
+            if (sanitizedExercises.length > 0) {
               await tx.workoutExercise.createMany({
-                data: dayDto.exercises.map((ex) => ({
+                data: sanitizedExercises.map((ex) => ({
                   id: crypto.randomUUID(),
                   workoutDayId: existingDay.id,
                   name: ex.name,

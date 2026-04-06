@@ -40,30 +40,33 @@ export const StatsSchema = z.object({
   totalTimeInSeconds: z.number(),
 });
 
-
 export const UpdateWorkoutPlanBodySchema = z.object({
   name: z.string().trim().min(1).optional(),
-  workoutDays: z.array(
-    z.object({
-      weekDay: z.enum(WeekDay),
-      name: z.string().optional(),
-      isRest: z.boolean().optional(),
-      estimatedDurationInSeconds: z.number().optional(),
-      coverImageUrl: z.url().optional(),
-      exercises: z.array(
-        z.object({
-          order: z.number().min(0),
-          name: z.string().trim().min(1),
-          sets: z.number().min(1),
-          reps: z.number().min(1),
-          restTimeInSeconds: z.number().min(1),
-          weightSuggestion: z.string().optional(),
-          notes: z.string().optional(),
-          exerciseId: z.string().optional(),
-        }),
-      ).optional(),
-    }),
-  ).optional(),
+  workoutDays: z
+    .array(
+      z.object({
+        weekDay: z.enum(WeekDay),
+        name: z.string().optional(),
+        isRest: z.boolean().optional(),
+        estimatedDurationInSeconds: z.number().min(0).optional(),
+        coverImageUrl: z.url().optional(),
+        exercises: z
+          .array(
+            z.object({
+              order: z.number().min(0),
+              name: z.string().trim().min(1),
+              sets: z.number().min(1),
+              reps: z.number().min(1),
+              restTimeInSeconds: z.number().min(0).optional(),
+              weightSuggestion: z.string().optional(),
+              notes: z.string().optional(),
+              exerciseId: z.string().optional(),
+            }),
+          )
+          .optional(),
+      }),
+    )
+    .optional(),
 });
 
 export const HomeDataSchema = z.object({
@@ -75,7 +78,7 @@ export const HomeDataSchema = z.object({
       name: z.string(),
       isRest: z.boolean(),
       weekDay: z.enum(WeekDay),
-      estimatedDurationInSeconds: z.number(),
+      estimatedDurationInSeconds: z.number().min(0).optional(),
       coverImageUrl: z.url().optional(),
       exercisesCount: z.number(),
       sessionStatus: z.enum(["not_started", "in_progress", "completed"]),
@@ -97,7 +100,7 @@ export const GetWorkoutDaySchema = z.object({
   name: z.string(),
   isRest: z.boolean(),
   coverImageUrl: z.url().optional(),
-  estimatedDurationInSeconds: z.number(),
+  estimatedDurationInSeconds: z.number().min(0).optional(),
   weekDay: z.enum(WeekDay),
   exercises: z.array(
     z.object({
@@ -107,7 +110,7 @@ export const GetWorkoutDaySchema = z.object({
       workoutDayId: z.uuid(),
       sets: z.number(),
       reps: z.number(),
-      restTimeInSeconds: z.number(),
+      restTimeInSeconds: z.number().min(0).optional(),
       weightSuggestion: z.string().optional(),
       notes: z.string().optional(),
       gifUrl: z.string().optional(),
@@ -142,7 +145,7 @@ export const GetWorkoutPlanSchema = z.object({
       name: z.string(),
       isRest: z.boolean(),
       coverImageUrl: z.url().optional(),
-      estimatedDurationInSeconds: z.number(),
+      estimatedDurationInSeconds: z.number().min(0),
       exercisesCount: z.number(),
     }),
   ),
@@ -166,7 +169,7 @@ export const ListWorkoutPlansSchema = z.array(
         name: z.string(),
         weekDay: z.enum(WeekDay),
         isRest: z.boolean(),
-        estimatedDurationInSeconds: z.number(),
+        estimatedDurationInSeconds: z.number().min(0).optional(),
         coverImageUrl: z.url().optional(),
         exercises: z.array(
           z.object({
@@ -175,7 +178,7 @@ export const ListWorkoutPlansSchema = z.array(
             name: z.string(),
             sets: z.number(),
             reps: z.number(),
-            restTimeInSeconds: z.number(),
+            restTimeInSeconds: z.number().min(0).optional(),
             weightSuggestion: z.string().optional(),
             notes: z.string().optional(),
             exerciseId: z.uuid().optional(),
@@ -226,15 +229,15 @@ export const WorkoutPlanSchema = z.object({
       name: z.string().trim().min(1),
       weekDay: z.enum(WeekDay),
       isRest: z.boolean().default(false),
-      estimatedDurationInSeconds: z.number().min(1),
+      estimatedDurationInSeconds: z.number().min(0).optional(),
       coverImageUrl: z.url().optional(),
       exercises: z.array(
         z.object({
           order: z.number().min(0),
           name: z.string().trim().min(1),
-          sets: z.number().min(1),
-          reps: z.number().min(1),
-          restTimeInSeconds: z.number().min(1),
+          sets: z.number().min(0), 
+          reps: z.number().min(0), 
+          restTimeInSeconds: z.number().min(0), 
         }),
       ),
     }),

@@ -66,6 +66,12 @@ export class CreateWorkoutPlan {
 
     const validIds = new Set(validExercises.map((e) => e.id));
 
+    const sanitizedDays = dto.workoutDays.map((day) => ({
+      ...day,
+      coverImageUrl: day.isRest ? undefined : day.coverImageUrl,
+      exercises: day.isRest ? [] : day.exercises,
+    }));
+
     return prisma.$transaction(async (tx) => {
       if (existingWorkoutPlan) {
         await tx.workoutPlan.update({
@@ -81,7 +87,7 @@ export class CreateWorkoutPlan {
           userId: dto.userId,
           isActive: true,
           workoutDays: {
-            create: dto.workoutDays.map((workoutDay) => ({
+            create: sanitizedDays.map((workoutDay) => ({
               name: workoutDay.name,
               weekDay: workoutDay.weekDay,
               isRest: workoutDay.isRest,
