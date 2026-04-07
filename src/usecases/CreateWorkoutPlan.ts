@@ -19,7 +19,7 @@ interface InputDto {
       weightSuggestion?: string;
       notes?: string;
       restTimeInSeconds: number;
-      exerciseId?: string; // 👈 novo
+      exerciseId?: string; 
     }>;
   }>;
 }
@@ -40,7 +40,7 @@ interface OutputDto {
       sets: number;
       reps: number;
       restTimeInSeconds: number;
-      exerciseId?: string; // 👈 novo
+      exerciseId?: string; 
     }>;
   }>;
 }

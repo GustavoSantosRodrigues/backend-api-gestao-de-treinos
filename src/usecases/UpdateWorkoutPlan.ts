@@ -10,7 +10,7 @@ interface ExerciseDto {
   weightSuggestion?: string;
   notes?: string;
   restTimeInSeconds: number;
-  exerciseId?: string; // 👈 novo
+  exerciseId?: string; 
 }
 
 interface WorkoutDayDto {

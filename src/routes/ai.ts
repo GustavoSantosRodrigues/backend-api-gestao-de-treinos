@@ -458,7 +458,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
             },
           }),
 
-          // ─── TOOLS EXISTENTES (sem alteração na lógica) ────────────────
+
           getUserTrainData: tool({
             description:
               "Busca os dados de treino do usuário autenticado (peso, altura, idade, % gordura). Retorna null se não houver dados cadastrados.",
@@ -504,7 +504,6 @@ export const aiRoutes = async (app: FastifyInstance) => {
             },
           }),
 
-          // ✅ exerciseId adicionado nos exercises
           createWorkoutPlan: tool({
             description:
               "Cria um novo plano de treino completo para o usuário. " +
@@ -583,7 +582,6 @@ export const aiRoutes = async (app: FastifyInstance) => {
             },
           }),
 
-          // ✅ exerciseId adicionado nos exercises
           updateWorkoutPlan: tool({
             description:
               "Atualiza dias específicos de um plano de treino existente. Use para trocar exercícios, adicionar exercícios ou espelhar um dia em outro. SEMPRE use esta tool ao invés de recriar o plano do zero.",
@@ -606,7 +604,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
                     estimatedDurationInSeconds: z.number().optional(),
                     coverImageUrl: z.string().url().optional(),
                     exercises: z
-                      .array(exerciseSchema) // ✅ usa schema compartilhado
+                      .array(exerciseSchema) 
                       .optional()
                       .describe(
                         "Lista completa de exercícios do dia — substitui todos os exercícios existentes",
