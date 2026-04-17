@@ -99,15 +99,7 @@ export class GetStats {
       return total + end.diff(start, "second");
     }, 0);
 
-    const streakReferenceDate = dayjs.utc().isBefore(toDate)
-      ? dayjs.utc()
-      : toDate;
-
-    const workoutStreak = await this.calculateStreak(
-      workoutPlan.id,
-      workoutPlan.workoutDays,
-      streakReferenceDate,
-    );
+    const workoutStreak = await this.calculateStreak(workoutPlan.id);
 
     return {
       workoutStreak,
@@ -118,57 +110,12 @@ export class GetStats {
     };
   }
 
-  private async calculateStreak(
-    workoutPlanId: string,
-    workoutDays: Array<{
-      weekDay: string;
-      isRest: boolean;
-    }>,
-    currentDate: dayjs.Dayjs,
-  ): Promise<number> {
-    const planWeekDays = new Set(workoutDays.map((d) => d.weekDay));
-    const restWeekDays = new Set(
-      workoutDays.filter((d) => d.isRest).map((d) => d.weekDay),
-    );
-
-    const allSessions = await prisma.workoutSession.findMany({
+  private async calculateStreak(workoutPlanId: string): Promise<number> {
+    return prisma.workoutSession.count({
       where: {
         workoutDay: { workoutPlanId },
         completedAt: { not: null },
       },
-      select: { startedAt: true },
     });
-
-    const completedDates = new Set(
-      allSessions.map((s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD")),
-    );
-
-    let streak = 0;
-    let day = currentDate;
-
-    for (let i = 0; i < 365; i++) {
-      const weekDay = WEEKDAY_MAP[day.day()];
-
-      if (!planWeekDays.has(weekDay)) {
-        day = day.subtract(1, "day");
-        continue;
-      }
-
-      if (restWeekDays.has(weekDay)) {
-        day = day.subtract(1, "day");
-        continue;
-      }
-
-      const dateKey = day.format("YYYY-MM-DD");
-      if (completedDates.has(dateKey)) {
-        streak++;
-        day = day.subtract(1, "day");
-        continue;
-      }
-
-      break;
-    }
-
-    return streak;
   }
 }

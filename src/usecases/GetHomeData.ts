@@ -75,13 +75,21 @@ export class GetHomeData {
 
     const weekSessions = await prisma.workoutSession.findMany({
       where: {
-        workoutDay: {
-          workoutPlanId: workoutPlan?.id,
-        },
-        startedAt: {
-          gte: weekStart.toDate(),
-          lte: weekEnd.toDate(),
-        },
+        workoutDay: { workoutPlanId: workoutPlan?.id },
+        OR: [
+          {
+            startedAt: {
+              gte: weekStart.toDate(),
+              lte: weekEnd.toDate(),
+            },
+          },
+          {
+            completedAt: {
+              gte: weekStart.toDate(),
+              lte: weekEnd.toDate(),
+            },
+          },
+        ],
       },
     });
 
@@ -99,8 +107,10 @@ export class GetHomeData {
       );
 
       const workoutDayStarted = daySessions.length > 0;
-      const workoutDayCompleted = daySessions.some(
-        (s) => s.completedAt !== null,
+      const workoutDayCompleted = weekSessions.some(
+        (s) =>
+          s.completedAt !== null &&
+          dayjs.utc(s.completedAt).format("YYYY-MM-DD") === dateKey,
       );
 
       consistencyByDay[dateKey] = { workoutDayCompleted, workoutDayStarted };
@@ -109,11 +119,7 @@ export class GetHomeData {
     let workoutStreak = 0;
 
     if (workoutPlan) {
-      workoutStreak = await this.calculateStreak(
-        workoutPlan.id,
-        workoutPlan.workoutDays,
-        currentDate,
-      );
+      workoutStreak = await this.calculateStreak(workoutPlan.id);
     }
 
     const todaySession = todayWorkoutDay?.sessions.find((s) => {
@@ -150,64 +156,12 @@ export class GetHomeData {
     };
   }
 
-  private async calculateStreak(
-    workoutPlanId: string,
-    workoutDays: Array<{
-      weekDay: string;
-      isRest: boolean;
-      sessions: Array<{ startedAt: Date; completedAt: Date | null }>;
-    }>,
-    currentDate: dayjs.Dayjs,
-  ): Promise<number> {
-    const planWeekDays = new Set(workoutDays.map((d) => d.weekDay));
-    const restWeekDays = new Set(
-      workoutDays.filter((d) => d.isRest).map((d) => d.weekDay),
-    );
-
-    const allSessions = await prisma.workoutSession.findMany({
+  private async calculateStreak(workoutPlanId: string): Promise<number> {
+    return prisma.workoutSession.count({
       where: {
         workoutDay: { workoutPlanId },
         completedAt: { not: null },
       },
-      select: { startedAt: true },
     });
-
-    const completedDates = new Set(
-      allSessions.map((s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD")),
-    );
-
-    let streak = 0;
-    let day = currentDate;
-
-    for (let i = 0; i < 365; i++) {
-      const weekDay = WEEKDAY_MAP[day.day()];
-
-      if (!planWeekDays.has(weekDay)) {
-        day = day.subtract(1, "day");
-        continue;
-      }
-
-      // if (restWeekDays.has(weekDay)) {
-      //   streak++;
-      //   day = day.subtract(1, "day");
-      //   continue;
-      // }
-
-      if (restWeekDays.has(weekDay)) {
-        day = day.subtract(1, "day");
-        continue;
-      }
-
-      const dateKey = day.format("YYYY-MM-DD");
-      if (completedDates.has(dateKey)) {
-        streak++;
-        day = day.subtract(1, "day");
-        continue;
-      }
-
-      break;
-    }
-
-    return streak;
   }
 }
