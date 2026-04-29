@@ -119,13 +119,16 @@ export class GetHomeData {
     let workoutStreak = 0;
 
     if (workoutPlan) {
-      workoutStreak = await this.calculateStreak(workoutPlan.id);
+      workoutStreak = await this.calculateStreak(
+        workoutPlan.id,
+        dayjs.utc(dto.date),
+      );
     }
 
-    const todaySession = todayWorkoutDay?.sessions.find((s) => {
-      const sessionDate = dayjs(s.startedAt).format("YYYY-MM-DD");
-      return sessionDate === currentDate.format("YYYY-MM-DD");
-    });
+    const todayDateUtc = dayjs.utc(dto.date).format("YYYY-MM-DD");
+    const todaySession = todayWorkoutDay?.sessions.find(
+      (s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD") === todayDateUtc,
+    );
 
     const sessionStatus = !todaySession
       ? "not_started"
@@ -156,12 +159,51 @@ export class GetHomeData {
     };
   }
 
-  private async calculateStreak(workoutPlanId: string): Promise<number> {
-    return prisma.workoutSession.count({
-      where: {
-        workoutDay: { workoutPlanId },
-        completedAt: { not: null },
-      },
-    });
+  private async calculateStreak(
+    workoutPlanId: string,
+    today: ReturnType<typeof dayjs.utc>,
+  ): Promise<number> {
+    const [completedSessions, restDays] = await Promise.all([
+      prisma.workoutSession.findMany({
+        where: { workoutDay: { workoutPlanId }, completedAt: { not: null } },
+        select: { completedAt: true },
+      }),
+      prisma.workoutDay.findMany({
+        where: { workoutPlanId, isRest: true },
+        select: { weekDay: true },
+      }),
+    ]);
+
+    const restWeekDayNames = new Set(restDays.map((d) => d.weekDay as string));
+    const completedDates = new Set(
+      completedSessions.map((s) =>
+        dayjs.utc(s.completedAt!).format("YYYY-MM-DD"),
+      ),
+    );
+
+    const todayStr = today.format("YYYY-MM-DD");
+    const hasTodaySession = completedDates.has(todayStr);
+
+    let streak = 0;
+    let checkDate = hasTodaySession ? today : today.subtract(1, "day");
+
+    for (let i = 0; i < 365; i++) {
+      const dateStr = checkDate.format("YYYY-MM-DD");
+      const weekDayName = WEEKDAY_MAP[checkDate.day()];
+
+      if (restWeekDayNames.has(weekDayName)) {
+        checkDate = checkDate.subtract(1, "day");
+        continue;
+      }
+
+      if (completedDates.has(dateStr)) {
+        streak++;
+        checkDate = checkDate.subtract(1, "day");
+      } else {
+        break;
+      }
+    }
+
+    return streak;
   }
 }
