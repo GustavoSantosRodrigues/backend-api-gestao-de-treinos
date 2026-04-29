@@ -23,6 +23,7 @@ import fastifyRateLimit from "@fastify/rate-limit";
 import { nutritionRoutes } from "./routes/nutrition.js";
 import { aiNutritionRoutes } from "./routes/ai-nutrition.js";
 import { exercisesRoutes } from "./routes/exercises.js";
+import { feedbackRoutes } from "./routes/feedback.js";
 import { trainerRoutes } from "./routes/trainer.js";
 
 
@@ -134,6 +135,7 @@ await app.register(aiNutritionRoutes);
 await app.register(nutritionRoutes);
 await app.register(exercisesRoutes);
 await app.register(trainerRoutes, { prefix: "/trainer" });
+await app.register(feedbackRoutes);
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",

@@ -13,6 +13,7 @@ const schema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  DISCORD_WEBHOOK_URL: z.string().url(),
   AI_RATE_LIMIT: z.coerce.number().default(20),
   DOCS_USERNAME: z.string().default("admin"),
   DOCS_PASSWORD: z.string().default("311905Guh!"),
