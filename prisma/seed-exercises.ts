@@ -820,6 +820,12 @@ const exercises: ExerciseSeed[] = [
     gifUrl: "/gif-exercise/perna/hack-sumo.gif",
   },
   {
+    id: "hack-squat",
+    name: "Agachamento Hack Squat",
+    muscles: ["quadriceps", "gluteo", "adutor"],
+    gifUrl: "/gif-exercise/perna/hack-squat.gif",
+  },
+  {
     id: "agachamento-isometrico",
     name: "Agachamento Isométrico na Parede",
     muscles: ["quadriceps"],
