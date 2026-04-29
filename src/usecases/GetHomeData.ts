@@ -98,6 +98,8 @@ export class GetHomeData {
       { workoutDayCompleted: boolean; workoutDayStarted: boolean }
     > = {};
 
+    const todayUtcStr = dayjs.utc(dto.date).format("YYYY-MM-DD");
+
     for (let i = 0; i < 7; i++) {
       const day = weekStart.add(i, "day");
       const dateKey = day.format("YYYY-MM-DD");
@@ -107,11 +109,13 @@ export class GetHomeData {
       );
 
       const workoutDayStarted = daySessions.length > 0;
-      const workoutDayCompleted = weekSessions.some(
-        (s) =>
-          s.completedAt !== null &&
-          dayjs.utc(s.completedAt).format("YYYY-MM-DD") === dateKey,
-      );
+      const workoutDayCompleted =
+        dateKey <= todayUtcStr &&
+        weekSessions.some(
+          (s) =>
+            s.completedAt !== null &&
+            dayjs.utc(s.completedAt).format("YYYY-MM-DD") === dateKey,
+        );
 
       consistencyByDay[dateKey] = { workoutDayCompleted, workoutDayStarted };
     }
@@ -184,8 +188,29 @@ export class GetHomeData {
     const todayStr = today.format("YYYY-MM-DD");
     const hasTodaySession = completedDates.has(todayStr);
 
+    // Walk forward from today to find the tip of the consecutive chain
+    let tip = hasTodaySession ? today : today.subtract(1, "day");
+
+    if (hasTodaySession) {
+      let next = today.add(1, "day");
+      for (let i = 0; i < 365; i++) {
+        const weekDayName = WEEKDAY_MAP[next.day()];
+        if (restWeekDayNames.has(weekDayName)) {
+          next = next.add(1, "day");
+          continue;
+        }
+        if (completedDates.has(next.format("YYYY-MM-DD"))) {
+          tip = next;
+          next = next.add(1, "day");
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Walk backwards from tip counting consecutive completed days
     let streak = 0;
-    let checkDate = hasTodaySession ? today : today.subtract(1, "day");
+    let checkDate = tip;
 
     for (let i = 0; i < 365; i++) {
       const dateStr = checkDate.format("YYYY-MM-DD");
